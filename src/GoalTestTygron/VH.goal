@@ -1,3 +1,8 @@
+#import "HousingMain.mod2g".
+#import "HousingEvent.mod2g".
+#import "CompanyMain.mod2g".
+#import "CompanyEvent.mod2g".
+
 init module {
 	knowledge {
 		
@@ -26,12 +31,14 @@ init module {
 
 main module {
 	program {
-		
+		if bel ( stakeholder(_, Type), Type == "Housing") then HousingMain.
+		if bel ( stakeholder(_, Type), Type == "Company") then CompanyMain.
 	}
 }
 
 event module {
 	program {
- 		
+		if bel ( stakeholder(_, Type), Type == "Housing") then HousingEvent.
+		if bel ( stakeholder(_, Type), Type == "Company") then CompanyEvent.
 	}
 }

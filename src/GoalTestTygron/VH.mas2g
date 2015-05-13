@@ -7,4 +7,5 @@ agentfiles{
 
 launchpolicy{
 	when entity@env do launch VH.
+	%when [type=bot, max=2]@env do launch *:bot2.
 }
