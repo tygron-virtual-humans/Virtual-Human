@@ -4,12 +4,15 @@
 #import "CompanyEvent.mod2g".
 
 init module {
-	knowledge {
-		
+		knowledge {
+		stakeHolderHousing :- stakeholder(_, Type), Type == "Housing".
+		stakeHolderCompany :- stakeholder(_, Type), Type == "Company".
 	}
+	
 	beliefs {
 		
 	}
+	
 	program {
 		if bel(percept(initIndicator(ID,Value,Target))) then insert(initIndicator(ID,Value,Target)).
 		
@@ -31,14 +34,14 @@ init module {
 
 main module {
 	program {
-		if bel ( stakeholder(_, Type), Type == "Housing") then HousingMain.
-		if bel ( stakeholder(_, Type), Type == "Company") then CompanyMain.
+		if bel ( stakeHolderHousing ) then HousingMain.
+		if bel ( stakeHolderCompany ) then CompanyMain.
 	}
 }
 
 event module {
 	program {
-		if bel ( stakeholder(_, Type), Type == "Housing") then HousingEvent.
-		if bel ( stakeholder(_, Type), Type == "Company") then CompanyEvent.
+		if bel ( stakeHolderHousing ) then HousingEvent.
+		if bel ( stakeHolderCompany ) then CompanyEvent.
 	}
 }
