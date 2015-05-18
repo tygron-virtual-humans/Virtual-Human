@@ -1,5 +1,23 @@
 module CompanyMain{
+	
+	%Code is nog niet werkend. Dit is geschreven om te kijken welke percepts er verder nog nodig zijn en welke moeten worden aangepast.
 	program{
-
+		if bel(stakeholder(ID, Type), groundpercept(ID, Value), Value>0) then print("enough land"). 
+		
+		if bel(budget(Value), Value>0) then print("enough budget"). 
+		
+		%Kies een indicator (list van indicators?)
+		if bel(initIndicator(ID, Importance, [target]), progressIndicator(ID, Progress), Progress<100) then print("go build!").
+		
+		if bel(target(_, Type, ToDo), ToDo>0,
+				budget(Value), Value>0,
+				stakeholder(StakeID, _), groundpercept(StakeID, Ground), Ground>0,
+				building(Type, Price),
+				Size=min(ToDo, Value/Price, Ground)) then insert(plan("ID?", "Location?", Type, Size)).
+		
+		forall bel(plan("ID?", "Location?", Type, Size), stakeholder(ID, _)) do insert(permit(ID, "ownID?", "State?", "PlanID?")).	
+		
+		%Actie askPermit moet nog worden gemaakt
+		forall bel(permit(ID, "ownID?", "State?", "PlanID?")) do askPermit("...").			
 	}
 }
