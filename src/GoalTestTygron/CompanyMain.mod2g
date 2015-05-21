@@ -2,9 +2,13 @@ module CompanyMain{
 	
 	%Code is not working yet, problems with percepts.
 	program{
-		if bel(stakeholder(ID, Type), groundpercept(ID, Value), Value>0) then print("enough land"). 
+		forall bel(stakeholder(ID, _, _), 
+					initIndicator(ID, IndicatorID, _), 
+					indicator(IndicatorID, Type, Name, Target, Current, Progress),
+					Goal=Target-Current) 
+			do adopt(build(Type, Goal)).
 		
-		if bel(budget(Value), Value>0) then print("enough budget"). 
+		forall goal(build(Type, Goal), Goal>0, Goal<100) do print(Goal).
 		
 		%Choose an indicator (list of indicators?)
 %		if bel(initIndicator(ID, Importance, [target]), progressIndicator(ID, Progress), Progress<100) then print("go build!").
