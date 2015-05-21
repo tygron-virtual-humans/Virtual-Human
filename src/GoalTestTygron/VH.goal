@@ -1,14 +1,14 @@
 #import "HousingMain.mod2g".
 #import "HousingEvent.mod2g".
-#import "CompanyMain.mod2g".
+%#import "CompanyMain.mod2g".
 #import "CompanyEvent.mod2g".
 #import "StandardEvents.mod2g".
 
 init module {
 	knowledge {
 		% Saves the type of the stakeholder in a predicate/0.
-		stakeHolderHousing :- stakeholder(_, Type), Type == "Housing".
-		stakeHolderCompany :- stakeholder(_, Type), Type == "Company".
+	%	stakeHolderHousing :- stakeholder(_, Type), Type == "Housing".
+	%	stakeHolderCompany :- stakeholder(_, Type), Type == "Company".
 	}
 	
 	beliefs {
@@ -38,10 +38,10 @@ init module {
 main module {
 	program {
 		% If the stakeholder is the housing coorporation, call HousingMain. This contains a main module for the housing.
-		if bel ( stakeHolderHousing ) then HousingMain.
+	%	if bel ( stakeHolderHousing ) then HousingMain.
 		
 		% If the stakeholder is the company, call CompanyMain. This contains a main module for the company.
-		if bel ( stakeHolderCompany ) then CompanyMain.
+	%	if bel ( stakeHolderCompany ) then CompanyMain.
 	}
 }
 
@@ -51,9 +51,9 @@ event module {
 		if bel ( true ) then StandardEvents.
 		
 		% If the stakeholder is the Housing coorporation, call the HousingEvent, which contains all the events specific for the housing stakeholder.
-		if bel ( stakeHolderHousing ) then HousingEvent.
+%		if bel ( stakeHolderHousing ) then HousingEvent.
 		
 		% If the stakeholder is the company, call the CompanyEvent, which contains all the events specific for the company stakeholder.
-		if bel ( stakeHolderCompany ) then CompanyEvent.
+%		if bel ( stakeHolderCompany ) then CompanyEvent.
 	}
 }
