@@ -2,9 +2,11 @@
 #import "HousingEvent.mod2g".
 #import "CompanyMain.mod2g".
 #import "CompanyEvent.mod2g".
+#import "StandardEvents.mod2g".
 
 init module {
-		knowledge {
+	knowledge {
+		% Saves the type of the stakeholder in a predicate/0.
 		stakeHolderHousing :- stakeholder(_, Type), Type == "Housing".
 		stakeHolderCompany :- stakeholder(_, Type), Type == "Company".
 	}
@@ -14,7 +16,8 @@ init module {
 	}
 	
 	program {
-		if bel(percept(initIndicator(ID,Value,Target))) then insert(initIndicator(ID,Value,Target)).
+		% Initialize the indicators with their targets and curretn values.
+		forall bel(percept(initIndicator(ID, Importance ,Target))) do insert(initIndicator(ID, Importance, Target)).
 		
 		forall bel(percept(progressIndicator(ID, Value))) do insert(progressIndicator(ID, Value)).
 		
@@ -34,14 +37,23 @@ init module {
 
 main module {
 	program {
+		% If the stakeholder is the housing coorporation, call HousingMain. This contains a main module for the housing.
 		if bel ( stakeHolderHousing ) then HousingMain.
+		
+		% If the stakeholder is the company, call CompanyMain. This contains a main module for the company.
 		if bel ( stakeHolderCompany ) then CompanyMain.
 	}
 }
 
 event module {
 	program {
+		% Always call the StandardEvents module, which contains events handling every stakeholder has (like budget changes).
+		if bel ( true ) then StandardEvents.
+		
+		% If the stakeholder is the Housing coorporation, call the HousingEvent, which contains all the events specific for the housing stakeholder.
 		if bel ( stakeHolderHousing ) then HousingEvent.
+		
+		% If the stakeholder is the company, call the CompanyEvent, which contains all the events specific for the company stakeholder.
 		if bel ( stakeHolderCompany ) then CompanyEvent.
 	}
 }
