@@ -14,5 +14,6 @@ agentfiles{
 }
 
 launchpolicy{
-	when entity@env do launch TygronAgent.
+	% Dit is een test.
+	when entity@env do launch VH.
 }
