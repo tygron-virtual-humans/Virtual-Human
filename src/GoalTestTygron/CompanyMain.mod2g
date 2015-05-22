@@ -2,7 +2,7 @@ module CompanyMain{
 	
 	%Code is not working yet, problems with percepts.
 	program{
-		forall bel(stakeholder(ID, _, _), 
+		forall bel(stakeholder(ID,X, Y), 
 					initIndicator(ID, IndicatorID, _), 
 					indicator(IndicatorID, Type, Name, Target, Current, Progress),
 					Goal=Target-Current) 
