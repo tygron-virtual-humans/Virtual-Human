@@ -1,7 +1,9 @@
 environment{
+	% Environment we work with that connects to the Tygron Engine.
 	env = "tygron_environment-1.0-SNAPSHOT-jar-with-dependencies.jar".
 	init = [
-		%These parameters are not mandatory, defaults are: stakeholder = 1, map = testmap and slot is random
+		% These parameters are not mandatory, defaults are: stakeholder = 1, map = testmap and slot is random
+		% There is no other way to do this yet, since the other group is still working on this.
 	
 		% Stakeholder, 0 is muncipianity, 1 is the housing corporation, 2 is company
 		stakeholder = 1,
@@ -10,10 +12,11 @@ environment{
 	].
 }
 agentfiles{
+	% The file to run.
 	"VH.goal".
 }
 
 launchpolicy{
-	% Dit is een test.
+	% Launch the environment and the agent.
 	when entity@env do launch VH.
 }

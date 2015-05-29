@@ -2,11 +2,15 @@ module StandardEvents{
 	program{
 
 		% If the budget changes, delete the old value and insert the new value in the believes.
-		if bel(percept(budget(NewValue)), budget(OldValue)) then 								delete(budget(OldValue)) 
-																								+ insert (budget(NewValue)).
+		if bel(percept(budget(NewValue)), budget(OldValue)) then 		delete(budget(OldValue)) 
+																		+ insert (budget(NewValue)).
 		
 		% If one of the indicators changes, delete the old indicator and insert the new indicator in the believes.
 		forall bel(progressIndicator(ID, OldValue), percept(progressIndicator(ID, NewValue))) 	do delete(progressIndicator(ID, OldValue)) 
 																								+ insert(progressIndicator(ID, NewValue)).
+																								
+		
+		% If a permit is coming in, insert it in the believes. Permits are needed to buy land and build buildings.
+		forall bel(percept(permit(StakeholderId, Id, State, Job))) 		do insert(permit(StakeholderId, Id, State, Job)).																						
 	}
 }
