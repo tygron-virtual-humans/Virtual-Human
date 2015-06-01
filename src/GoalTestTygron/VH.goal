@@ -1,17 +1,17 @@
 % Please do note that we are working with another group. Many percepts are made but not used, so 
 % everything we have here is just a 'guess', since it might be to difficult to implement it by the other group.
 
-#import "HousingMain.mod2g".
-#import "HousingEvent.mod2g".
-#import "CompanyMain.mod2g".
-#import "CompanyEvent.mod2g".
-#import "StandardEvents.mod2g".
+%#import "HousingMain.mod2g".
+%#import "HousingEvent.mod2g".
+%#import "CompanyMain.mod2g".
+%#import "CompanyEvent.mod2g".
+%#import "StandardEvents.mod2g".
 
 init module {
 	knowledge {
 		% Since there is no other way to implement this yet, the stakeholder that the agent is playing
 		% needs to be hardcoded. Please comment the stakeholders that are not used.
-		stakeHolderHousing.
+	%	stakeHolderHousing.
 		% stakeHolderCompany.
 		% stakeHolderMunicipality.
 	}
@@ -22,48 +22,48 @@ init module {
 	
 	program {
 		% Initialize the indicators with their targets and current values.
-		forall bel(percept(initIndicator(ID, Importance ,Target))) do insert(initIndicator(ID, Importance, Target)).
+	%	forall bel(percept(initIndicator(ID, Importance ,Target))) do insert(initIndicator(ID, Importance, Target)).
 		
 		% Initialize the progress of the indicators.
-		forall bel(percept(progressIndicator(ID, Value))) do insert(progressIndicator(ID, Value)).
+	%	forall bel(percept(progressIndicator(ID, Value))) do insert(progressIndicator(ID, Value)).
 		
 		% Initialize the targets (e.g. build 1000 houses).
-		forall bel(percept(target(ID, Type))) do insert(target(ID, Type)).
+	%	forall bel(percept(target(ID, Type))) do insert(target(ID, Type)).
 		
 		% Initializes the stakeholder this is. This is not working yet, but this is how we want it, if the other group can manage this.
-		if bel(percept(stakeholder(ID, Type))) then insert(stakeholder(ID, Type)).
+	%	if bel(percept(stakeholder(ID, Type))) then insert(stakeholder(ID, Type)).
 		
 		% Initializes the other stakeholders.
-		forall bel(percept(otherStakeholders(ID, Type))) do insert(otherStakeholders(ID, Type)).
+	%	forall bel(percept(otherStakeholders(ID, Type))) do insert(otherStakeholders(ID, Type)).
 		
 		% Initializes all the ground in the map. Could have values as "Free", "Building" or "Park".
 		% Not implemented yet by the other group, not sure if it will be used.
-		forall bel(percept(groundpercept(ID, Value))) do insert(groundpercept(ID, Value)).
+	%	forall bel(percept(groundpercept(ID, Value))) do insert(groundpercept(ID, Value)).
 		
 		% Initializes the starting budget.
-		if bel(percept(budget(Value))) then insert(budget(Value)).
+	%	if bel(percept(budget(Value))) then insert(budget(Value)).
 	}
 }
 
 main module {
 	program {
 		% If the stakeholder is the housing coorporation, call HousingMain. This contains a main module for the housing.
-		if bel ( stakeHolderHousing ) then HousingMain.
+	%	if bel ( stakeHolderHousing ) then HousingMain.
 		
 		% If the stakeholder is the company, call CompanyMain. This contains a main module for the company.
-		if bel ( stakeHolderCompany ) then CompanyMain.
+%		if bel ( stakeHolderCompany ) then CompanyMain.
 	}
 }
 
 event module {
 	program {
 		% Always call the StandardEvents module, which contains events handling every stakeholder has (like budget changes).
-		if bel ( true ) then StandardEvents.
+	%	if bel ( true ) then StandardEvents.
 		
 		% If the stakeholder is the Housing coorporation, call the HousingEvent, which contains all the events specific for the housing stakeholder.
-		if bel ( stakeHolderHousing ) then HousingEvent.
+	%	if bel ( stakeHolderHousing ) then HousingEvent.
 		
 		% If the stakeholder is the company, call the CompanyEvent, which contains all the events specific for the company stakeholder.
-		if bel ( stakeHolderCompany ) then CompanyEvent.
+		%if bel ( stakeHolderCompany ) then CompanyEvent.
 	}
 }
