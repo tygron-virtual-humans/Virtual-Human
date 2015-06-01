@@ -1,14 +1,14 @@
 environment{
 	% Environment we work with that connects to the Tygron Engine.
-	env = "tygron_environment-1.0-20150529.203725-1-jar-with-dependencies.jar".
+	env = "tygron_environment-1.0-SNAPSHOT-jar-with-dependencies.jar".
 	init = [
 		% These parameters are not mandatory, defaults are: stakeholder = 1, map = testmap and slot is random
 		% There is no other way to do this yet, since the other group is still working on this.
 	
 		% Stakeholder, 0 is muncipianity, 1 is the housing corporation, 2 is company
-		stakeholder = 1,
-		map = "testmap",
-		slot = 1
+		stakeholder = 0,
+		map = "delft",
+		slot = 22
 	].
 }
 
