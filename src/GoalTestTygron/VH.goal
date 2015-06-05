@@ -50,13 +50,13 @@ init module {
 	actionspec{
 		
 		build(Surface, Type) {
-			pre {  }
-			post{  }
+			pre { true }
+			post{ true }
 		}
 		
 		buyLand(Surface, Cost) {
-			pre {  }
-			post{  }
+			pre { true }
+			post{ true }
 		}
 	}
 }
