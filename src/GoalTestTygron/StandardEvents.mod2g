@@ -1,16 +1,25 @@
 module StandardEvents{
 	program{
 
+		
+		if bel(	percept( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)),
+				indicator(ID, Type, Name, Name, OldProgress, OldCurrent, Target))
+		do delete(indicator(ID, Type, Name, Name, OldProgress, OldCurrent, Target)) 
+		+  insert(indicator(ID, Type, Name, NewProgress, NewCurrent, Target)
+
+		if bel(percept( economy(ID, Category, NewState)), economy(ID, Category, OldState)) do delete(economy(ID, Category, OldState)) + insert(economy(ID, Category, NewState)).
+		
+		
 		% If the budget changes, delete the old value and insert the new value in the believes.
-		if bel(percept(budget(NewValue)), budget(OldValue)) then 		delete(budget(OldValue)) 
-																		+ insert (budget(NewValue)).
+		%if bel(percept(budget(NewValue)), budget(OldValue)) then 		delete(budget(OldValue)) 
+		%																+ insert (budget(NewValue)).
 		
 		% If one of the indicators changes, delete the old indicator and insert the new indicator in the believes.
-		forall bel(progressIndicator(ID, OldValue), percept(progressIndicator(ID, NewValue))) 	do delete(progressIndicator(ID, OldValue)) 
-																								+ insert(progressIndicator(ID, NewValue)).
+		%forall bel(progressIndicator(ID, OldValue), percept(progressIndicator(ID, NewValue))) 	do delete(progressIndicator(ID, OldValue)) 
+		%																						+ insert(progressIndicator(ID, NewValue)).
 																								
 		
 		% If a permit is coming in, insert it in the believes. Permits are needed to buy land and build buildings.
-		forall bel(percept(permit(StakeholderId, Id, State, Job))) 		do insert(permit(StakeholderId, Id, State, Job)).																						
+		%forall bel(percept(permit(StakeholderId, Id, State, Job))) 		do insert(permit(StakeholderId, Id, State, Job)).																						
 	}
 }

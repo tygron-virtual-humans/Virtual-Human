@@ -21,27 +21,33 @@ init module {
 	}
 	
 	program {
+		
+		forall bel (percept(stakeholder(ID, Name, Nickname))) do insert( stakeholder(ID, Name, Nickname)).
+		
+		forall bel (percept(initIndicator(SID, IID, Weight))) do insert( initIndicator(SID, IDD, Weight)).
+		
+		
 		% Initialize the indicators with their targets and current values.
-	%	forall bel(percept(initIndicator(ID, Importance ,Target))) do insert(initIndicator(ID, Importance, Target)).
+		%forall bel(percept(initIndicator(ID, Importance ,Target))) do insert(initIndicator(ID, Importance, Target)).
 		
 		% Initialize the progress of the indicators.
-	%	forall bel(percept(progressIndicator(ID, Value))) do insert(progressIndicator(ID, Value)).
+		%forall bel(percept(progressIndicator(ID, Value))) do insert(progressIndicator(ID, Value)).
 		
 		% Initialize the targets (e.g. build 1000 houses).
-	%	forall bel(percept(target(ID, Type))) do insert(target(ID, Type)).
+		%forall bel(percept(target(ID, Type))) do insert(target(ID, Type)).
 		
 		% Initializes the stakeholder this is. This is not working yet, but this is how we want it, if the other group can manage this.
-	%	if bel(percept(stakeholder(ID, Type))) then insert(stakeholder(ID, Type)).
+		%if bel(percept(stakeholder(ID, Type))) then insert(stakeholder(ID, Type)).
 		
 		% Initializes the other stakeholders.
-	%	forall bel(percept(otherStakeholders(ID, Type))) do insert(otherStakeholders(ID, Type)).
+		%forall bel(percept(otherStakeholders(ID, Type))) do insert(otherStakeholders(ID, Type)).
 		
 		% Initializes all the ground in the map. Could have values as "Free", "Building" or "Park".
 		% Not implemented yet by the other group, not sure if it will be used.
-	%	forall bel(percept(groundpercept(ID, Value))) do insert(groundpercept(ID, Value)).
+		%forall bel(percept(groundpercept(ID, Value))) do insert(groundpercept(ID, Value)).
 		
 		% Initializes the starting budget.
-	%	if bel(percept(budget(Value))) then insert(budget(Value)).
+		%if bel(percept(budget(Value))) then insert(budget(Value)).
 	}
 }
 
@@ -58,7 +64,7 @@ main module {
 event module {
 	program {
 		% Always call the StandardEvents module, which contains events handling every stakeholder has (like budget changes).
-	%	if bel ( true ) then StandardEvents.
+		if bel ( true ) then StandardEvents.
 		
 		% If the stakeholder is the Housing coorporation, call the HousingEvent, which contains all the events specific for the housing stakeholder.
 	%	if bel ( stakeHolderHousing ) then HousingEvent.
