@@ -1,6 +1,6 @@
 environment{
 	% Environment we work with that connects to the Tygron Engine.
-	env = "tygron_environment-1.0-SNAPSHOT-jar-with-dependencies.jar".
+	env = "tygron-connect-environment-1.0-20150605.091346-1-jar-with-dependencies.jar".
 	init = [
 		% These parameters are not mandatory, defaults are: stakeholder = 1, map = testmap and slot is random
 		% There is no other way to do this yet, since the other group is still working on this.
