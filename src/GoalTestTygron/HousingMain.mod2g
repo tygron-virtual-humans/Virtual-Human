@@ -1,5 +1,6 @@
 module HousingMain{
 	program{
 		% No code implemented yet, was planned for the week were we got the extra assignment.
+		if bel(true) then buyLand(500, 100).
 	}
 }

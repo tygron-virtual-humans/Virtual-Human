@@ -9,6 +9,9 @@ module StandardEvents{
 
 		forall bel(percept( economy(ID, Category, NewState)), economy(ID, Category, OldState)) do delete(economy(ID, Category, OldState)) + insert(economy(ID, Category, NewState)).
 		
+		if bel( land(Surface), Surface = 0, budget(Current), Current > 0) then adopt( buyNewLand).
+		
+		if bel(percept(indicator(ID, Type, ID, _, Current, _)), Type == 'finance', selfStakeholderID(ID), budget(OldBudget)) then delete(budget(OldBudget)) + insert( budget(Current)).
 		
 		% If the budget changes, delete the old value and insert the new value in the believes.
 		%if bel(percept(budget(NewValue)), budget(OldValue)) then 		delete(budget(OldValue)) 

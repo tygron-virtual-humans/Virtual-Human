@@ -12,23 +12,28 @@ init module {
 		
 		% Since there is no other way to implement this yet, the stakeholder that the agent is playing
 		% needs to be hardcoded. Please comment the stakeholders that are not used.
-		%stakeHolderHousing.
+		% stakeHolderHousing.
 		% stakeHolderCompany.
 		% stakeHolderMunicipality.
 	}
 	
 	beliefs {
-		
+		land(0).
 	}
 	
 	program {
+		if bel( percept(selfStakehold(ID))) then insert( selfStakeholderID(ID)).
 		
 		forall bel (percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Name, Name)).
 		
 		% Initialize the indicators with their targets and current values.
 		forall bel (percept( initIndicator(StakeholderID, IndicatorID, Weight))) do insert( initIndicator(StakeholderID, IndicatorID, Weight)).
 
+
 		forall bel(percept(indicator(ID, Type, Name, Target, Current, Progress))) do insert(indicator(ID, Type, Name, Target, Current, Progress)).
+		
+		%% This code is temporary invalid. Should work when the indicator(_,_,ID,_,_) and selfStakeholderID are working.
+		if bel(percept(indicator(ID, Type, ID, _, Current, _)), Type == 'finance', selfStakeholderID(ID)) then insert( budget(Current)).
 		
 		forall bel(percept(stakeholder(ID, Type, Name))) do insert(stakeholder(ID, Type, Name)).
 		
@@ -37,22 +42,23 @@ init module {
 		
 	actionspec{
 		
+		buyLand(Surface, Cost) {
+			pre { true }
+			post{ true }
+		}
+		
 		build(Surface, Type) {
 			pre { true }
 			post{ true }
 		}
 		
-		buyLand(Surface, Cost) {
-			pre { true }
-			post{ true }
-		}
 	}
 }
 
 main module {
 	program {
 		% If the stakeholder is the housing coorporation, call HousingMain. This contains a main module for the housing.
-		%if bel ( stakeHolderHousing ) then HousingMain.
+		if bel ( true ) then HousingMain.
 		
 		% If the stakeholder is the company, call CompanyMain. This contains a main module for the company.
 		%if bel ( stakeHolderCompany ) then CompanyMain.
