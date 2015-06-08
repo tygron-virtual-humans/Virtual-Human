@@ -1,13 +1,17 @@
 masTest{
 
-	mas = "VH.mas2g".
+	mas = "../VH.mas2g".
 	VH {
 		standardEventsTest {
 			do clear.
 			
 			evaluate {
-				eventually bel(indicator(5, housing, 'building housing corporation', _, _, 1000.0)).
-			} in do buyLand(100, 4000)
+				eventually bel(indicator(5, finance, 'budget housing corporation', 0.1, 996000, 10000000)).
+			} in do buyLand(100, 4000).
+			
+			evaluate {
+				eventually bel(indicator(5, housing, 'building housing corporation', 0.1, 100, 1000.0))	
+			} in do build(100, 1).
 		}
 	}
 
