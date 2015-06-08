@@ -28,7 +28,7 @@ init module {
 		% Initialize the indicators with their targets and current values.
 		forall bel (percept( initIndicator(StakeholderID, IndicatorID, Weight))) do insert( initIndicator(StakeholderID, IndicatorID, Weight)).
 
-		forall bel(percept(indicator(ID, Type, Name, Target, Current, Progress))) do insert(indicator(ID, Type, Name, Target, Current, Progress)).
+		forall bel(percept(indicator(ID, Type, Name, Progress, Current, Target))) do insert(indicator(ID, Type, Name, Progress, Current, Target)).
 		
 		forall bel(percept(stakeholder(ID, Type, Name))) do insert(stakeholder(ID, Type, Name)).
 		
