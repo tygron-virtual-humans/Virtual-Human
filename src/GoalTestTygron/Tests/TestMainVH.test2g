@@ -1,0 +1,15 @@
+masTest{
+
+	mas = "../VH.mas2g".
+	VH {
+		Stakeholders {
+			
+				evaluate{
+					eventually bel(stakeholder(0, 'Municipality', 'Municipality')).
+					eventually bel(stakeholder(1, 'Housing Corporation', 'DUWO')).
+					eventually bel(stakeholder(2, 'Company', 'Company')).
+					eventually not(bel(stakeholder(3, 'Company', 'Company'))).
+				} in init.
+	}
+	}
+}
