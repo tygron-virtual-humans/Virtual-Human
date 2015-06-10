@@ -19,12 +19,13 @@ init module {
 	
 	beliefs {
 		%Belief that the stakeholder has no land
+		selfStakeholderID(2).
 		land(0).
 	}
 	
 	program {
 		%Initialize itself with an ID.
-		if bel( percept(selfStakehold(ID))) then insert( selfStakeholderID(ID)).
+		if bel( percept(selfStakeholderID(ID))) then insert( selfStakeholderID(ID)).
 		
 		%Initialize the other stakeholders.
 		forall bel (percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Name, Name)).
@@ -36,7 +37,8 @@ init module {
 		forall bel(percept(indicator(ID, Type, Name, Target, Current, Progress))) do insert(indicator(ID, Type, Name, Target, Current, Progress)).
 		
 		%Initialize the buget of the stakeholder.
-		if bel(percept(indicator(ID, Type, ID, _, Current, _)), Type == 'finance', selfStakeholderID(ID)) then insert( budget(Current)).
+		if bel( percept(indicator(IndiID, Type, _, _, Current, _)), Type == 'finance', selfStakeholderID(ID), initIndicator(ID, IndiID, _)) then insert( budget(Current)).
+		%if bel(percept(indicator(ID, Type, ID, _, Current, _)), Type == 'finance', selfStakeholderID(ID)) then insert( budget(Current)).
 		
 		%Initialize all economies.		
 		forall bel(percept(economy(ID, Name, Type))) do insert(economy(ID, Name, Type)).
