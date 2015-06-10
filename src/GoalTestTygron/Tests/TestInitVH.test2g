@@ -2,14 +2,23 @@ masTest{
 
 	mas = "../VH.mas2g".
 	VH {
-		Stakeholders {
+		%test if the virtual humans initialize right.
+		Init {
 			
 				evaluate{
+					
+					%test if it recognizes itself.
+					eventually bel(self(_)).
+					
+					%test if it reconginizes all the stakeholders
 					eventually bel(stakeholder(0, 'Municipality', 'Municipality')).
 					eventually bel(stakeholder(1, 'Housing Corporation', 'DUWO')).
 					eventually bel(stakeholder(2, 'Company', 'Company')).
 					eventually not(bel(stakeholder(3, 'Company', 'Company'))).
+					
+					eventually bel(self(X), indicator(X, _, _)).
 				} in init.
+				
 	}
 	}
 }
