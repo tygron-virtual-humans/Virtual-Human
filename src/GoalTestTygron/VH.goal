@@ -19,12 +19,13 @@ init module {
 	
 	beliefs {
 		%Belief that the stakeholder has no land
+		selfStakeholderID(2).
 		land(0).
 	}
 	
 	program {
 		%Initialize itself with an ID.
-		if bel( percept(selfStakehold(ID))) then insert( selfStakeholderID(ID)).
+		if bel( percept(selfStakeholderID(ID))) then insert( selfStakeholderID(ID)).
 		
 		%Initialize the other stakeholders.
 		forall bel (percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Name, Name)).
@@ -36,7 +37,8 @@ init module {
 		forall bel(percept(indicator(ID, Type, Name, Target, Current, Progress))) do insert(indicator(ID, Type, Name, Target, Current, Progress)).
 		
 		%Initialize the buget of the stakeholder.
-		if bel(percept(indicator(ID, Type, ID, _, Current, _)), Type == 'finance', selfStakeholderID(ID)) then insert( budget(Current)).
+		if bel( percept(indicator(IndiID, Type, _, _, Current, _)), Type == 'finance', selfStakeholderID(ID), initIndicator(ID, IndiID, _)) then insert( budget(Current)).
+		%if bel(percept(indicator(ID, Type, ID, _, Current, _)), Type == 'finance', selfStakeholderID(ID)) then insert( budget(Current)).
 		
 		%Initialize all economies.		
 		forall bel(percept(economy(ID, Name, Type))) do insert(economy(ID, Name, Type)).
@@ -66,13 +68,16 @@ main module {
 		
 		% If the stakeholder is the company, call CompanyMain. This contains a main module for the company.
 		if bel ( stakeHolderCompany ) then CompanyMain.
+		
+		% Work in progress
+		%if bel( goal(buyLand(Budget)), ) then buyLand
 	}
 }
 
 event module {
 	program {
 		% Always call the StandardEvents module, which contains events handling every stakeholder has (like budget changes).
-		if bel ( true ) then StandardEvents.
+		if bel ( not(targetReached) ) then StandardEvents.
 		
 		% If the stakeholder is the Housing coorporation, call the HousingEvent, which contains all the events specific for the housing stakeholder.
 %		if bel ( stakeHolderHousing ) then HousingEvent.
