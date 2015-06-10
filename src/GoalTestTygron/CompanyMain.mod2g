@@ -14,6 +14,7 @@ module CompanyMain{
 		forall goal(build(Type, Goal), Goal>0) do print("action").
 		
 		%If a goal is reached, drop that goal
-		forall goal(build(Type, Goal), Goal=<0) do drop(build(Type, Goal)).		
+		forall goal(build(Type, Goal), Goal=<0) do drop(build(Type, Goal)).
+					
 	}
 }
