@@ -69,7 +69,8 @@ main module {
 		% If the stakeholder is the company, call CompanyMain. This contains a main module for the company.
 		if bel ( stakeHolderCompany ) then CompanyMain.
 		
-		if bel( goal(buyLand(Budget)), ) then buyLand
+		% Work in progress
+		%if bel( goal(buyLand(Budget)), ) then buyLand
 	}
 }
 
