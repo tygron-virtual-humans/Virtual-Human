@@ -1,5 +1,8 @@
 module StandardEvents{
 	program{	
+		
+		
+		
 		%Update indicators on change.
 		forall bel( percept( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)),
 				indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
@@ -10,9 +13,9 @@ module StandardEvents{
 		forall bel(percept( economy(ID, Category, NewState)), economy(ID, Category, OldState)) do delete(economy(ID, Category, OldState)) + insert(economy(ID, Category, NewState)).
 		
 		%Update budget of the stakeholder on change
-		if bel(percept(indicator(ID, Type, ID, _, Current, _)), Type == 'finance', selfStakeholderID(ID), budget(OldBudget)) then delete(budget(OldBudget)) + insert( budget(Current)).
+		if bel( percept(indicator(InID, Type, Name, _, Current, _)), Type = 'finance', selfStakeholderID(ID), initIndicator(InID, ID, _), budget(OldBudget)) then delete(budget(OldBudget)) + insert(budget(Current)).
 		
 		%If the stakeholder has no land, adopt buyNewLand
-		if bel( land(Surface), Surface = 0, budget(Current), Current > 0) then adopt( buyNewLand).																				
+		if bel( land(Surface), Surface = 0, budget(Current), Current > 0) then adopt( buyNewLand(Current)).																				
 	}
 }

@@ -68,13 +68,15 @@ main module {
 		
 		% If the stakeholder is the company, call CompanyMain. This contains a main module for the company.
 		if bel ( stakeHolderCompany ) then CompanyMain.
+		
+		if bel( goal(buyLand(Budget)), ) then buyLand
 	}
 }
 
 event module {
 	program {
 		% Always call the StandardEvents module, which contains events handling every stakeholder has (like budget changes).
-		if bel ( true ) then StandardEvents.
+		if bel ( not(targetReached) ) then StandardEvents.
 		
 		% If the stakeholder is the Housing coorporation, call the HousingEvent, which contains all the events specific for the housing stakeholder.
 %		if bel ( stakeHolderHousing ) then HousingEvent.
