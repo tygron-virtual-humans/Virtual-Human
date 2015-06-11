@@ -10,14 +10,14 @@
 init module {
 	knowledge {
 		
-		updateLand(Old, Surface, New):- New is Old+Surface.
+		updateIncLand(Old, Surface, New):- New is Old+Surface.
+		updateDecLand(Old, Surface, New):- New is Old-Surface.
 		newBudget(Current,Surface, Cost, New) :- New is Current-(Surface*Cost).
 	}
 	
 	beliefs {
 		%Belief that the stakeholder has no land
 		standardPrice(400).
-		selfStakeholderID(2).
 		land(0).
 	}
 	
@@ -44,13 +44,13 @@ init module {
 		
 		%Action for buying land.
 		buyLand(Surface, Cost) {
-			pre { true }
-			post{true}
+			pre { land(Old), updateIncLand(Old,Surface, New)}
+			post{land(New)}
 		}
 		
 		%Action for building.
 		build(Surface, Type) {
-			pre { land(Old), updateLand(Old,Surface, New) }
+			pre { land(Old), updateDecLand(Old,Surface, New) }
 			post{ land(New) }
 		}
 		
@@ -81,14 +81,14 @@ event module {
 		do delete(indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
 		+  insert(indicator(ID, Type, Name, NewProgress, NewCurrent, Target)).
 		
-		if bel(indicator(ID, Type, Name, Target, Current, Progress), Progress == '100') then insert(targetReached(true)).  
-		if  bel(indicator(ID, Type, Name, Target, Current, Progress), Progress \= '100') then insert(targetReached(false)).  
+		if bel(indicator(ID, Type, Name, Target, Current, Progress), Progress == '100', targetReached(false)) then delete(targetReached(false)) + insert(targetReached(true)).  
+		if  bel(indicator(ID, Type, Name, Target, Current, Progress), Progress \= '100', targetReached(true)) then delete(targetReached(true)) + insert(targetReached(false)).  
 
 		if bel(targetReached(false)) then {
-			if bel( land(Surface), Surface = 0, budget(Current), Current > 0) then adopt(buyNewLand).
+			if bel( land(Surface), Surface = 0) then adopt(buyNewLand).
 			
-			if bel(selfStakeholderID('1')) then HousingEvent.
-			if bel(selfStakeholderID('2')) then CompanyEvent.
+			%if bel(selfStakeholderID('1')) then HousingEvent.
+			%if bel(selfStakeholderID('2')) then CompanyEvent.
 		
 		}
 	}
