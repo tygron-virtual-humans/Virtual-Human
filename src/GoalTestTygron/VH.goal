@@ -20,11 +20,14 @@ init module {
 		targetReached(false).
 		standardPrice(400).
 		land(0).
+		
+		%---- Self hardcoded
+		selfStakeholderID(1).
 	}
 	
 	program {
 		%Initialize itself with an ID.
-		if bel( percept(selfStakeholderID(ID))) then insert( selfStakeholderID(ID)).
+		if bel( percept(selfStakeholderID(ID))) then insert(selfStakeholderID(ID)).
 		
 		%Initialize the other stakeholders.
 		forall bel (percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
@@ -63,8 +66,8 @@ main module {
 		
 		
 	if bel(targetReached(false)) then {
-			if bel(selfStakeholderID('1')) then HousingMain.
-			if bel(selfStakeholderID('2')) then CompanyMain.
+			if bel(selfStakeholderID(1)) then HousingMain.
+			if bel(selfStakeholderID(2)) then CompanyMain.
 		}
 	}
 }
