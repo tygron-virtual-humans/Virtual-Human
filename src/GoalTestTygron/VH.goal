@@ -17,6 +17,7 @@ init module {
 	
 	beliefs {
 		%Belief that the stakeholder has no land
+		targetReached(false).
 		standardPrice(400).
 		land(0).
 	}
