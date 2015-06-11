@@ -10,7 +10,7 @@
 init module {
 	knowledge {
 		
-		%budgetLand(Current, X, Y, R) :- R is Current/X*Y.
+		updateLand(Old, Surface, New):- New is Old+Surface.
 		newBudget(Current,Surface, Cost, New) :- New is Current-(Surface*Cost).
 	}
 	
@@ -50,8 +50,8 @@ init module {
 		
 		%Action for building.
 		build(Surface, Type) {
-			pre { true }
-			post{ true }
+			pre { land(Old), updateLand(Old,Surface, New) }
+			post{ land(New) }
 		}
 		
 	}
@@ -75,10 +75,18 @@ event module {
 		if bel( percept(indicator(IndiID, Type, _, _, New, _)), Type == 'finance', selfStakeholderID(ID),
 		 initIndicator(ID, IndiID, _), budget(X), X\=New) then delete(budget(X)) + insert( budget(New)).
 		
+		%Update indicators on change.
+		forall bel( percept( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)),
+				indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
+		do delete(indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
+		+  insert(indicator(ID, Type, Name, NewProgress, NewCurrent, Target)).
+		
 		if bel(indicator(ID, Type, Name, Target, Current, Progress), Progress == '100') then insert(targetReached(true)).  
 		if  bel(indicator(ID, Type, Name, Target, Current, Progress), Progress \= '100') then insert(targetReached(false)).  
 
 		if bel(targetReached(false)) then {
+			if bel( land(Surface), Surface = 0, budget(Current), Current > 0) then adopt(buyNewLand).
+			
 			if bel(selfStakeholderID('1')) then HousingEvent.
 			if bel(selfStakeholderID('2')) then CompanyEvent.
 		
