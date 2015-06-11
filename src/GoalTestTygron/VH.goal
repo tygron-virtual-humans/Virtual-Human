@@ -28,7 +28,7 @@ init module {
 		if bel( percept(selfStakeholderID(ID))) then insert( selfStakeholderID(ID)).
 		
 		%Initialize the other stakeholders.
-		forall bel (percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Name, Name)).
+		forall bel (percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
 		
 		% Initialize the indicators for this stakeholder with its importance.
 		forall bel (percept( initIndicator(StakeholderID, IndicatorID, Weight)), selfStakeholderID(StakeholderID)) do insert( initIndicator(StakeholderID, IndicatorID, Weight)).
@@ -77,7 +77,7 @@ main module {
 event module {
 	program {
 		% Always call the StandardEvents module, which contains events handling every stakeholder has (like budget changes).
-		if bel ( not(targetReached) ) then StandardEvents.
+		if bel (true) then StandardEvents.
 		
 		% If the stakeholder is the Housing coorporation, call the HousingEvent, which contains all the events specific for the housing stakeholder.
 %		if bel ( stakeHolderHousing ) then HousingEvent.

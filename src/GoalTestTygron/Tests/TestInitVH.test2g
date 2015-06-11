@@ -24,6 +24,9 @@ masTest{
 					%test if economy is inserted
 					eventually bel(economy(ID, Name, Type)).
 					
+					%test if start budget is inserted
+					eventually bel(budget(Current)).
+					
 					
 				} in init.
 				
