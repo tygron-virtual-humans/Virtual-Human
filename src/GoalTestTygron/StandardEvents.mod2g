@@ -16,6 +16,7 @@ module StandardEvents{
 		if bel( percept(indicator(InID, Type, Name, _, Current, _)), Type = 'finance', selfStakeholderID(ID), initIndicator(InID, ID, _), budget(OldBudget)) then delete(budget(OldBudget)) + insert(budget(Current)).
 		
 		%If the stakeholder has no land, adopt buyNewLand
-		if bel( land(Surface), Surface = 0, budget(Current), Current > 0) then adopt( buyNewLand(Current)).																				
+		if bel( land(Surface), Surface = 0, budget(Current), Current > 0) then adopt( buyNewLand).
+																					
 	}
 }

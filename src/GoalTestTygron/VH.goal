@@ -10,15 +10,12 @@
 init module {
 	knowledge {
 		
-		% Since there is no other way to implement this yet, the stakeholder that the agent is playing
-		% needs to be hardcoded. Please comment the stakeholders that are not used.
-		%stakeHolderHousing.
-		 stakeHolderCompany.
-		% stakeHolderMunicipality.
+		%budgetLand(Current, X, Y, R) :- R is Current/X*Y.
 	}
 	
 	beliefs {
 		%Belief that the stakeholder has no land
+		standardPrice(400).
 		selfStakeholderID(2).
 		land(0).
 	}
@@ -63,14 +60,16 @@ init module {
 
 main module {
 	program {
+		
+		
 		% If the stakeholder is the housing coorporation, call HousingMain. This contains a main module for the housing.
-		%if bel ( stakeHolderHousing ) then HousingMain.
+		if bel ( selfStakeholderID(1) ) then HousingMain.
 		
 		% If the stakeholder is the company, call CompanyMain. This contains a main module for the company.
-		if bel ( stakeHolderCompany ) then CompanyMain.
+		%if bel ( selfStakeholderID(2) ) then CompanyMain.
 		
 		% Work in progress
-		%if bel( goal(buyLand(Budget)), ) then buyLand
+		if goal(buyNewLand), bel(budget(Current)) then buyLand(Current, Current).
 	}
 }
 
@@ -78,6 +77,7 @@ event module {
 	program {
 		% Always call the StandardEvents module, which contains events handling every stakeholder has (like budget changes).
 		if bel ( true ) then StandardEvents.
+		%not(targetReached)
 		
 		% If the stakeholder is the Housing coorporation, call the HousingEvent, which contains all the events specific for the housing stakeholder.
 %		if bel ( stakeHolderHousing ) then HousingEvent.
