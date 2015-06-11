@@ -11,6 +11,7 @@ init module {
 	knowledge {
 		
 		%budgetLand(Current, X, Y, R) :- R is Current/X*Y.
+		newBudget(Current,Surface, Cost, New) :- New is Current-(Surface*Cost).
 	}
 	
 	beliefs {
@@ -28,17 +29,15 @@ init module {
 		forall bel (percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
 		
 		% Initialize the indicators for this stakeholder with its importance.
-		forall bel (percept( initIndicator(StakeholderID, IndicatorID, Weight)), selfStakeholderID(StakeholderID)) do insert( initIndicator(StakeholderID, IndicatorID, Weight)).
+		forall bel (percept( initIndicator(StakeholderID, IndicatorID, Weight)), selfStakeholderID(StakeholderID)) do insert(initIndicator(StakeholderID, IndicatorID, Weight)).
 
 		%Initialize the targets with their current value and progress.
 		forall bel(percept(indicator(ID, Type, Name, Target, Current, Progress))) do insert(indicator(ID, Type, Name, Target, Current, Progress)).
 		
 		%Initialize the buget of the stakeholder.
 		if bel( percept(indicator(IndiID, Type, _, _, Current, _)), Type == 'finance', selfStakeholderID(ID), initIndicator(ID, IndiID, _)) then insert( budget(Current)).
-		%if bel(percept(indicator(ID, Type, ID, _, Current, _)), Type == 'finance', selfStakeholderID(ID)) then insert( budget(Current)).
+	
 		
-		%Initialize all economies.		
-		forall bel(percept(economy(ID, Name, Type))) do insert(economy(ID, Name, Type)).
 	}
 		
 	actionspec{
@@ -46,7 +45,7 @@ init module {
 		%Action for buying land.
 		buyLand(Surface, Cost) {
 			pre { true }
-			post{ true }
+			post{true}
 		}
 		
 		%Action for building.
@@ -62,27 +61,27 @@ main module {
 	program {
 		
 		
-		% If the stakeholder is the housing coorporation, call HousingMain. This contains a main module for the housing.
-		if bel ( selfStakeholderID(1) ) then HousingMain.
-		
-		% If the stakeholder is the company, call CompanyMain. This contains a main module for the company.
-		%if bel ( selfStakeholderID(2) ) then CompanyMain.
-		
-		% Work in progress
-		if goal(buyNewLand), bel(budget(Current)) then buyLand(Current, Current).
+	if bel(targetReached(false)) then {
+			if bel(selfStakeholderID('1')) then HousingMain.
+			if bel(selfStakeholderID('2')) then CompanyMain.
+		}
 	}
 }
 
 event module {
 	program {
 		% Always call the StandardEvents module, which contains events handling every stakeholder has (like budget changes).
-		if bel ( true ) then StandardEvents.
-		%not(targetReached)
 		
-		% If the stakeholder is the Housing coorporation, call the HousingEvent, which contains all the events specific for the housing stakeholder.
-%		if bel ( stakeHolderHousing ) then HousingEvent.
+		if bel( percept(indicator(IndiID, Type, _, _, New, _)), Type == 'finance', selfStakeholderID(ID),
+		 initIndicator(ID, IndiID, _), budget(X), X\=New) then delete(budget(X)) + insert( budget(New)).
 		
-		% If the stakeholder is the company, call the CompanyEvent, which contains all the events specific for the company stakeholder.
-%		if bel ( stakeHolderCompany ) then CompanyEvent.
+		if bel(indicator(ID, Type, Name, Target, Current, Progress), Progress == '100') then insert(targetReached(true)).  
+		if  bel(indicator(ID, Type, Name, Target, Current, Progress), Progress \= '100') then insert(targetReached(false)).  
+
+		if bel(targetReached(false)) then {
+			if bel(selfStakeholderID('1')) then HousingEvent.
+			if bel(selfStakeholderID('2')) then CompanyEvent.
+		
+		}
 	}
 }
