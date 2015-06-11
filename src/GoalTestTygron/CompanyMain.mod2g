@@ -1,20 +1,14 @@
 module CompanyMain{
+	
 	% Module for the company stakeholder.
-	% We are not sure that we will use this code, since we do not know what predicates can be used.
 	program{
-		%For every target make a goal to build the building needed for that target
-		forall bel(stakeholder(ID, _, _), 
-					initIndicator(ID, IndicatorID, _), 
-					indicator(IndicatorID, Type, Name, Target, Current, Progress),
-					Goal=Target-Current) 
-			do adopt(build(Type, Goal)).
+		if goal(buildOff(X,Y)) then build(X,Y) + drop(buildOff(X,Y)).
+		if goal(buyNewLand(Need,X)) then buyLand(Need,X) + drop(buyNewLand(Need,X)).
 		
-		%Only perform build if the target is not reached
-		%The percepts for budget and land are not yet implemended, this needs to be taken into account to perform the action 
-		forall goal(build(Type, Goal), Goal>0) do print("action").
+		if bel( land(Surface), Surface = 0, calculateNeededLand(50,Need), standardPrice(X)) then adopt(buyNewLand(Need,X)).
 		
-		%If a goal is reached, drop that goal
-		forall goal(build(Type, Goal), Goal=<0) do drop(build(Type, Goal)).
+		%dit werkt niet, er bestaan geen offices volgens de manual ??
+		if bel(land(X), X>0) then adopt(buildOff(X,4)).
 					
 	}
 }

@@ -1,6 +1,10 @@
 module HousingMain{
 	program{
-		% No code implemented yet, was planned for the week were we got the extra assignment.
-		if bel(true) then buyLand(500, 100).
+		if goal(buildHouses(X,Y)) then build(X,Y) + drop(buildHouses(X,Y)).
+		if goal(buyNewLand(Need,X)) then buyLand(Need,X) + drop(buyNewLand(Need,X)).
+		
+		if bel( land(Surface), Surface = 0, calculateNeededLand(50,Need), standardPrice(X)) then adopt(buyNewLand(Need,X)).
+		if bel(land(X), X>0) then adopt(buildHouses(X,1)).
+	
 	}
 }

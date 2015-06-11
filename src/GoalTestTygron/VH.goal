@@ -13,6 +13,7 @@ init module {
 		updateIncLand(Old, Surface, New):- New is Old+Surface.
 		updateDecLand(Old, Surface, New):- New is Old-Surface.
 		newBudget(Current,Surface, Cost, New) :- New is Current-(Surface*Cost).
+		calculateNeededLand(Perc, Surf) :- standardPrice(X), budget(Current), Surf is (Current*(Perc/100))/X.
 	}
 	
 	beliefs {
@@ -36,7 +37,7 @@ init module {
 		forall bel (percept( initIndicator(StakeholderID, IndicatorID, Weight)), selfStakeholderID(StakeholderID)) do insert(initIndicator(StakeholderID, IndicatorID, Weight)).
 
 		%Initialize the targets with their current value and progress.
-		forall bel(percept(indicator(ID, Type, Name, Target, Current, Progress))) do insert(indicator(ID, Type, Name, Target, Current, Progress)).
+		forall bel(percept(indicator(ID, Type, Name, Progress, Current, Target))) do insert(indicator(ID, Type, Name, Progress, Current, Target)).
 		
 		%Initialize the buget of the stakeholder.
 		if bel( percept(indicator(IndiID, Type, _, _, Current, _)), Type == 'finance', selfStakeholderID(ID), initIndicator(ID, IndiID, _)) then insert( budget(Current)).
@@ -49,13 +50,13 @@ init module {
 		%Action for buying land.
 		buyLand(Surface, Cost) {
 			pre { land(Old), updateIncLand(Old,Surface, New)}
-			post{land(New)}
+			post{not(land(Old)),land(New)}
 		}
 		
 		%Action for building.
 		build(Surface, Type) {
 			pre { land(Old), updateDecLand(Old,Surface, New) }
-			post{ land(New) }
+			post{not(land(Old)), land(New) }
 		}
 		
 	}
@@ -65,7 +66,7 @@ main module {
 	program {
 		
 		
-	if bel(targetReached(false)) then {
+	forall bel(targetReached(false)) do {
 			if bel(selfStakeholderID(1)) then HousingMain.
 			if bel(selfStakeholderID(2)) then CompanyMain.
 		}
@@ -76,6 +77,7 @@ event module {
 	program {
 		% Always call the StandardEvents module, which contains events handling every stakeholder has (like budget changes).
 		
+		% Update budget on change
 		if bel( percept(indicator(IndiID, Type, _, _, New, _)), Type == 'finance', selfStakeholderID(ID),
 		 initIndicator(ID, IndiID, _), budget(X), X\=New) then delete(budget(X)) + insert( budget(New)).
 		
@@ -85,14 +87,15 @@ event module {
 		do delete(indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
 		+  insert(indicator(ID, Type, Name, NewProgress, NewCurrent, Target)).
 		
-		if bel(indicator(ID, Type, Name, Target, Current, Progress), Progress == '100', targetReached(false)) then delete(targetReached(false)) + insert(targetReached(true)).  
-		if  bel(indicator(ID, Type, Name, Target, Current, Progress), Progress \= '100', targetReached(true)) then delete(targetReached(true)) + insert(targetReached(false)).  
-
+		%Check if all the progresses are 100%. If so, head target is reach
+		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress == '100', targetReached(false)) then delete(targetReached(false)) + insert(targetReached(true)).  
+		if  bel(indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) then delete(targetReached(true)) + insert(targetReached(false)).  
+	
+		%run only when target is not reached
 		if bel(targetReached(false)) then {
-			if bel( land(Surface), Surface = 0) then adopt(buyNewLand).
 			
-			%if bel(selfStakeholderID('1')) then HousingEvent.
-			%if bel(selfStakeholderID('2')) then CompanyEvent.
+			if bel(selfStakeholderID('1')) then HousingEvent.
+			if bel(selfStakeholderID('2')) then CompanyEvent.
 		
 		}
 	}
