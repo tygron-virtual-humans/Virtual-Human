@@ -7,8 +7,7 @@ module CompanyMain{
 		
 		if bel( land(Surface), Surface = 0, calculateNeededLand(50,Need), standardPrice(X)) then adopt(buyNewLand(Need,X)).
 		
-		%dit werkt niet, er bestaan geen offices volgens de manual ??
-		if bel(land(X), X>0) then adopt(buildOff(X,4)).
+		if bel(land(X), X>0) then adopt(buildOff(X,3)).
 					
 	}
 }

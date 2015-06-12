@@ -1,4 +1,6 @@
 module HousingMain{
+	
+	% Module for the housing corperation 
 	program{
 		if goal(buildHouses(X,Y)) then build(X,Y) + drop(buildHouses(X,Y)).
 		if goal(buyNewLand(Need,X)) then buyLand(Need,X) + drop(buyNewLand(Need,X)).

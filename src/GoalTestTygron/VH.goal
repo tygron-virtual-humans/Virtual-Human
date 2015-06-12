@@ -89,13 +89,13 @@ event module {
 		
 		%Check if all the progresses are 100%. If so, head target is reach
 		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress == '100', targetReached(false)) then delete(targetReached(false)) + insert(targetReached(true)).  
-		if  bel(indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) then delete(targetReached(true)) + insert(targetReached(false)).  
+		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) then delete(targetReached(true)) + insert(targetReached(false)).  
 	
 		%run only when target is not reached
 		if bel(targetReached(false)) then {
 			
-			if bel(selfStakeholderID('1')) then HousingEvent.
-			if bel(selfStakeholderID('2')) then CompanyEvent.
+			if bel(selfStakeholderID(1)) then HousingEvent.
+			if bel(selfStakeholderID(2)) then CompanyEvent.
 		
 		}
 	}
