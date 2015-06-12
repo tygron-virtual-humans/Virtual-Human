@@ -14,7 +14,7 @@ masTest{
 					eventually bel(stakeholder(0, 'Municipality', 'Municipality')).
 					eventually bel(stakeholder(1, 'Housing Corporation', 'DUWO')).
 					eventually bel(stakeholder(2, 'Company', 'Company')).
-					eventually not(bel(stakeholder(3, 'Company', 'Company'))).
+					eventually not(bel(stakeholder(3, 'Company', _))).
 					
 					%test if the right indicators are inserted
 					eventually bel(selfStakeholderID(X), initIndicator(X, _, _)).
