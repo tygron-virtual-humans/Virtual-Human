@@ -28,7 +28,7 @@ masTest{
 					eventually bel(budget(Current)).
 					
 					
-				} in init.
+				}  in do init.
 				
 	}
 	}
