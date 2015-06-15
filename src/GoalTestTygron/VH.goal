@@ -85,10 +85,10 @@ init module {
 main module {
 	program {	
 		
-		% Dynamic main change for the stakeholders
-		forall bel( targetReached(false)) do {
-			if bel( selfStakeholderID(1)) then HousingMain.
-			if bel( selfStakeholderID(2)) then CompanyMain.
+		%Dynamic main change for the stakeholders
+		forall bel(targetReached(false)) do {
+			if bel(selfStakeholderID(1)) then HousingMain.
+			if bel(selfStakeholderID(2)) then CompanyMain.
 		}
 	}
 }
@@ -114,13 +114,9 @@ event module {
 		if bel( indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) 
 		then delete( targetReached(true)) + insert( targetReached(false)).  
 	
-		
-		if bel( percept(responcePermit(ID)), waitingForPermit, selfStakeholderID(ID), oldBudget(OldBudget), budget(CurrentBudget), OldBudget \= CurrentBudget, rejectedConcurrentPermits(X))
-				then delete(waitingForPermit, oldBudget(OldBudget), rejectedConcurrentPermits(X)) + insert(readyForPermit, oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
-		
-		
+		%Permit handeling		
 		if bel( percept(responcePermit(ID)), 
-				waitingForPermit, 
+				readyForPermit(false), 
 				selfStakeholderID(ID), 
 				oldBudget(OldBudget), 
 				budget(CurrentBudget), 

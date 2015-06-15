@@ -21,10 +21,15 @@ init module {
 	}
 	
 	beliefs {
+<<<<<<< HEAD
+=======
+		%Belief that the stakeholder has no land
+		targetReached(false).
+	
+>>>>>>> Cleanup for main - permits
 		
 		% Boolean that shows whether the stakeholder has reached his goal yet.
 		targetReached(false).
-<<<<<<< HEAD
 	
 		% Standard price for each square of land.
 		standardPrice(400).
@@ -32,42 +37,34 @@ init module {
 		% Current amount of empty land owned. 
 		land(0).
 		
+<<<<<<< HEAD
 		% Current permit state (whether he is waiting for a permit to be accepted or not).
+=======
+		%Current permit state
+>>>>>>> Cleanup for main - permits
 		readyForPermit(true).
 		
 		% Percetage of budget to use when buying land.
 		percentage(50).
 		
 		% Number of rejected permits in a row.
-=======
-		
-		%Current price for land
-		standardPrice(400).
-		
-		%Current owned land 
-		land(0).
-		
-		%Current permit state
-		readyForPermit.
-		
-		%Percentage to use when buying
-		percentage(50).
-		
-		%Numeber rejected permits
->>>>>>> Add comments
 		rejectedConcurrentPermits(0).
 		
-		%---- Self hardcoded
-		selfStakeholderID(1).
 	}
 	
 	program {
 				
+<<<<<<< HEAD
 		% Initialize itself with an ID.
 		if bel( percept( selfStakeholderID(ID))) then insert( selfStakeholderID(ID)).
 		
+=======
+>>>>>>> Cleanup for main - permits
 		%Initialize itself with an ID.
 		if bel( percept(selfStakeholderID(ID))) then insert(selfStakeholderID(ID)).
+		
+		%Initialize the other stakeholders.
+		forall bel (percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
 		
 		% Initialize the indicators for this stakeholder with its importance.
 		forall bel ( percept( initIndicator(StakeholderID, IndicatorID, Weight)), selfStakeholderID(StakeholderID)) 
@@ -87,11 +84,7 @@ init module {
 		% Action for buying land.
 		buyLand(Surface, Cost) {
 			pre { land(Old), updateIncLand(Old,Surface, New)}
-<<<<<<< HEAD
-			post{not(land(Old)),oldLand(Old),land(New)}
-=======
 			post{not(land(Old)),land(New)}
->>>>>>> Add comments
 		}
 		
 		% Action for building.
@@ -105,10 +98,17 @@ init module {
 main module {
 	program {	
 		
+<<<<<<< HEAD
 		% Dynamic main change for the stakeholders
 		forall bel( targetReached(false)) do {
 			if bel( selfStakeholderID(1)) then HousingMain.
 			if bel( selfStakeholderID(2)) then CompanyMain.
+=======
+		%Dynamic main change for the stakeholders
+		forall bel(targetReached(false)) do {
+			if bel(selfStakeholderID(1)) then HousingMain.
+			if bel(selfStakeholderID(2)) then CompanyMain.
+>>>>>>> Cleanup for main - permits
 		}
 	}
 }
@@ -134,17 +134,14 @@ event module {
 		if bel( indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) 
 		then delete( targetReached(true)) + insert( targetReached(false)).  
 	
-		
-		if bel( percept(responcePermit(ID)), waitingForPermit, selfStakeholderID(ID), oldBudget(OldBudget), budget(CurrentBudget), OldBudget \= CurrentBudget, rejectedConcurrentPermits(X))
-				then delete(waitingForPermit, oldBudget(OldBudget), rejectedConcurrentPermits(X)) + insert(readyForPermit, oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
-		
-		
+		%Permit handeling		
 		if bel( percept(responcePermit(ID)), 
-				waitingForPermit, 
+				readyForPermit(false), 
 				selfStakeholderID(ID), 
 				oldBudget(OldBudget), 
 				budget(CurrentBudget), 
 				rejectedConcurrentPermits(X), 
+<<<<<<< HEAD
 				rejectedPermits(Current, New),
 				oldLand(Old),
 				land(New))
@@ -156,6 +153,15 @@ event module {
 			
 		% Run only when target is not reached yet.
 		if bel( targetReached(false)) then {
+=======
+				rejectedPermits(Current, New))
+			then  {
+				if (OldBudget == CurrentBudget) then delete(rejectedConcurrentPermits(Current)) + insert(rejectedConcurrentPermits(New)).
+				if (OldBudget \= CurrentBudget ) then delete(readyForPermit(false), oldBudget(OldBudget), rejectedConcurrentPermits(X)) + insert(readyForPermit(true), oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
+			}.
+		%run only when target is not reached
+		if bel(targetReached(false)) then {
+>>>>>>> Cleanup for main - permits
 			
 			if bel( selfStakeholderID(1)) then HousingEvent.
 			if bel( selfStakeholderID(2)) then CompanyEvent.
