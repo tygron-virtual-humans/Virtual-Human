@@ -96,8 +96,11 @@ event module {
 		+  insert(indicator(ID, Type, Name, NewProgress, NewCurrent, Target)).
 		
 		%Check if all the progresses are 100%. If so, head target is reach
-		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress == '100', targetReached(false)) then delete(targetReached(false)) + insert(targetReached(true)).  
-		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) then delete(targetReached(true)) + insert(targetReached(false)).  
+		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress == '100', targetReached(false)) 
+		then delete(targetReached(false)) + insert(targetReached(true)).  
+		
+		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) 
+		then delete(targetReached(true)) + insert(targetReached(false)).  
 	
 		%Permit handeling		
 		if bel( percept(responcePermit(ID)), 
@@ -108,9 +111,11 @@ event module {
 				rejectedConcurrentPermits(X), 
 				rejectedPermits(Current, New))
 			then  {
-				if (OldBudget == CurrentBudget) then delete(rejectedConcurrentPermits(Current)) + insert(rejectedConcurrentPermits(New)).
-				if (OldBudget \= CurrentBudget ) then delete(readyForPermit(false), oldBudget(OldBudget), rejectedConcurrentPermits(X)) + insert(readyForPermit(true), oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
-			}.
+				if bel(OldBudget == CurrentBudget) then delete(rejectedConcurrentPermits(Current)) + insert(rejectedConcurrentPermits(New)).
+				if bel(OldBudget \= CurrentBudget ) then delete(readyForPermit(false), oldBudget(OldBudget),
+				rejectedConcurrentPermits(X)) + insert(readyForPermit(true), oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
+			}
+			
 		%run only when target is not reached
 		if bel(targetReached(false)) then {
 			
