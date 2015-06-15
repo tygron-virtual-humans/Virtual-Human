@@ -9,11 +9,11 @@
 
 init module {
 	knowledge {
-		
 		updateIncLand(Old, Surface, New):- New is Old+Surface.
 		updateDecLand(Old, Surface, New):- New is Old-Surface.
 		newBudget(Current,Surface, Cost, New) :- New is Current-(Surface*Cost).
 		calculateNeededLand(Perc, Surf) :- standardPrice(X), budget(Current), Surf is (Current*(Perc/100))/X.
+		oldNewPercentage(Rejected, NewPercentage) :- NewPercentage is 50-Rejected*10.
 	}
 	
 	beliefs {
@@ -22,11 +22,16 @@ init module {
 		standardPrice(400).
 		land(0).
 		
+		readyForPermit.
+		percentage(50).
+		
 		%---- Self hardcoded
 		selfStakeholderID(1).
 	}
 	
 	program {
+		if bel (true) then insert( waitingForPermit) + delete(waitingForPermit).
+		if bel (true) then insert( permitResponce(ID)) + delete(permitResponce(ID)).
 		%Initialize itself with an ID.
 		if bel( percept(selfStakeholderID(ID))) then insert(selfStakeholderID(ID)).
 		
@@ -40,13 +45,10 @@ init module {
 		forall bel(percept(indicator(ID, Type, Name, Progress, Current, Target))) do insert(indicator(ID, Type, Name, Progress, Current, Target)).
 		
 		%Initialize the buget of the stakeholder.
-		if bel( percept(indicator(IndiID, Type, _, _, Current, _)), Type == 'finance', selfStakeholderID(ID), initIndicator(ID, IndiID, _)) then insert( budget(Current)).
-	
-		
+		if bel( percept(indicator(IndiID, Type, _, _, Current, _)), Type == 'finance', selfStakeholderID(ID), initIndicator(ID, IndiID, _)) then insert( budget(Current), oldBudget(Current)).		
 	}
 		
 	actionspec{
-		
 		%Action for buying land.
 		buyLand(Surface, Cost) {
 			pre { land(Old), updateIncLand(Old,Surface, New)}
@@ -58,15 +60,12 @@ init module {
 			pre { land(Old), updateDecLand(Old,Surface, New) }
 			post{not(land(Old)), land(New) }
 		}
-		
 	}
 }
 
 main module {
-	program {
-		
-		
-	forall bel(targetReached(false)) do {
+	program {	
+		forall bel(targetReached(false)) do {
 			if bel(selfStakeholderID(1)) then HousingMain.
 			if bel(selfStakeholderID(2)) then CompanyMain.
 		}
@@ -91,6 +90,10 @@ event module {
 		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress == '100', targetReached(false)) then delete(targetReached(false)) + insert(targetReached(true)).  
 		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) then delete(targetReached(true)) + insert(targetReached(false)).  
 	
+	
+		if bel( waitingForPermit, permitResponce(ID), selfStakeHolderID(ID), oldBudget(OldBudget), budget(CurrentBudget), OldBudget \= CurrentBudget)
+				then delete(waitingForPermit, oldBudget(OldBudget)) + insert(readyForPermit, oldBudget(CurrentBudget)).
+		
 		%run only when target is not reached
 		if bel(targetReached(false)) then {
 			

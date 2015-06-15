@@ -1,5 +1,11 @@
 module HousingEvent{
 	program{
-		% No code implemented yet, was planned for the week were we got the extra assignment.
+		if bel(percept(rejected(X)), waitingForPermit, X < 5, percentage(OldPercentage), oldNewPercentage(X, NewPercentage)) 
+							then delete(percentage(OldPercentage)) + insert(percentage(NewPercentage)).
+		
+		%if bel( land(X), X>0) then adopt(buildHouses(X,1)).
+
+		%if goal( buildHouses(X,Y)) then build(X,Y) + drop(buildHouses(X,Y)).
+		%if goal( buyNewLand(Need,X)) then buyLand(Need,X) + drop(buyNewLand(Need,X)).
 	}
 }
