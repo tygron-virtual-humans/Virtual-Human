@@ -6,32 +6,39 @@
 
 init module {
 	knowledge {
+		
+		% Increments the amount of empty land when land has been bought.
 		updateIncLand(Old, Surface, New):- New is Old+Surface.
+		% Decreases the amount of empty land when buildings are built on the land.
 		updateDecLand(Old, Surface, New):- New is Old-Surface.
+		% Updates the budget when a stakeholders has bought something.
 		newBudget(Current,Surface, Cost, New) :- New is Current-(Surface*Cost).
-		calculateNeededLand(Perc, Surf) :- standardPrice(X), budget(Current), Surf is (Current*(Perc/100))/X.
+		% Calculates how much land will be bought from the current budget.
+		calculateNeededLand(Perc, Surf) :- standardPrice(PricePerSquare), budget(Current), Surf is (Current*(Perc/100))/PricePerSquare.
+		% Decreases the amount of land you buy for every time your request to buy land has been rejected.
 		oldNewPercentage(Rejected, NewPercentage) :- NewPercentage is 50-Rejected*10.
+		% A counter that counts how often a permit has been rejected in a row.
 		rejectedPermits(Current, New) :- New is Current + 1.
 	}
 	
 	beliefs {
-		%Belief that the stakeholder has no land
+		
+		% Boolean that shows whether the stakeholder has reached his goal yet.
 		targetReached(false).
 	
-		
-		%Current price for land
+		% Standard price for each square of land.
 		standardPrice(400).
 		
-		%Current owned land 
+		% Current amount of empty land owned. 
 		land(0).
 		
-		%Current permit state
+		% Current permit state (whether he is waiting for a permit to be accepted or not).
 		readyForPermit(true).
 		
-		%Percentage to use when buying
+		% Percetage of budget to use when buying land.
 		percentage(50).
 		
-		%Numeber rejected permits
+		% Number of rejected permits in a row.
 		rejectedConcurrentPermits(0).
 		
 		%---- Self hardcoded
@@ -40,30 +47,34 @@ init module {
 	
 	program {
 				
-		%Initialize itself with an ID.
-		if bel( percept(selfStakeholderID(ID))) then insert(selfStakeholderID(ID)).
+		% Initialize itself with an ID.
+		if bel( percept( selfStakeholderID(ID))) then insert( selfStakeholderID(ID)).
 		
-		%Initialize the other stakeholders.
-		forall bel (percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
+		% Initialize the other stakeholders.
+		forall bel ( percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
 		
 		% Initialize the indicators for this stakeholder with its importance.
-		forall bel (percept( initIndicator(StakeholderID, IndicatorID, Weight)), selfStakeholderID(StakeholderID)) do insert(initIndicator(StakeholderID, IndicatorID, Weight)).
+		forall bel ( percept( initIndicator(StakeholderID, IndicatorID, Weight)), selfStakeholderID(StakeholderID)) 
+		do insert( initIndicator(StakeholderID, IndicatorID, Weight)).
 
-		%Initialize the targets with their current value and progress.
-		forall bel(percept(indicator(ID, Type, Name, Progress, Current, Target))) do insert(indicator(ID, Type, Name, Progress, Current, Target)).
+		% Initialize the targets with their current value and progress.
+		forall bel( percept( indicator(ID, Type, Name, Progress, Current, Target))) 
+		do insert( indicator(ID, Type, Name, Progress, Current, Target)).
 		
-		%Initialize the buget of the stakeholder.
-		if bel( percept(indicator(IndiID, Type, _, _, Current, _)), Type == 'finance', selfStakeholderID(ID), initIndicator(ID, IndiID, _)) then insert( budget(Current), oldBudget(Current)).		
+		% Initialize the buget of the stakeholder.
+		if bel( percept( indicator(IndiID, Type, _, _, Current, _)), Type == 'finance', selfStakeholderID(ID), initIndicator(ID, IndiID, _)) 
+		then insert( budget(Current), oldBudget(Current)).		
 	}
 		
 	actionspec{
-		%Action for buying land.
+		
+		% Action for buying land.
 		buyLand(Surface, Cost) {
 			pre { land(Old), updateIncLand(Old,Surface, New)}
 			post{not(land(Old)),oldLand(Old),land(New)}
 		}
 		
-		%Action for building.
+		% Action for building.
 		build(Surface, Type) {
 			pre { land(Old), updateDecLand(Old,Surface, New) }
 			post{not(land(Old)), oldLand(Old),land(New) }
@@ -74,10 +85,10 @@ init module {
 main module {
 	program {	
 		
-		%Dynamic main change for the stakeholders
-		forall bel(targetReached(false)) do {
-			if bel(selfStakeholderID(1)) then HousingMain.
-			if bel(selfStakeholderID(2)) then CompanyMain.
+		% Dynamic main change for the stakeholders
+		forall bel( targetReached(false)) do {
+			if bel( selfStakeholderID(1)) then HousingMain.
+			if bel( selfStakeholderID(2)) then CompanyMain.
 		}
 	}
 }
@@ -86,23 +97,24 @@ event module {
 	program {
 		
 		% Update budget on change
-		if bel( percept(indicator(IndiID, Type, _, _, New, _)), Type == 'finance', selfStakeholderID(ID),
-		 initIndicator(ID, IndiID, _), budget(X), X\=New) then delete(budget(X)) + insert( budget(New)).
+		if bel( percept( indicator(IndiID, Type, _, _, New, _)), Type == 'finance', selfStakeholderID(ID),
+		 initIndicator(ID, IndiID, _), budget(X), X\=New) then delete( budget(X)) + insert( budget(New)).
 		
-		%Update indicators on change.
+		% Update indicators on change.
 		forall bel( percept( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)),
 				indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
-		do delete(indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
-		+  insert(indicator(ID, Type, Name, NewProgress, NewCurrent, Target)).
+		do delete( indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
+		+  insert( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)).
 		
-		%Check if all the progresses are 100%. If so, head target is reach
-		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress == '100', targetReached(false)) 
-		then delete(targetReached(false)) + insert(targetReached(true)).  
+		% If the progress is 100, the target is reached and the agent stops.
+		if bel( indicator(ID, Type, Name, Progress, Current, Target), Progress == '100', targetReached(false)) 
+		then delete( targetReached(false)) + insert( targetReached(true)).  
 		
-		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) 
-		then delete(targetReached(true)) + insert(targetReached(false)).  
+		% If one progress is not 100 yet, the target is not reached, so the agent still has to do actions.
+		if bel( indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) 
+		then delete( targetReached(true)) + insert( targetReached(false)).  
 	
-		%Permit handeling		
+		% A stakeholder has asked for a permit and receives answer.		
 		if bel( percept(responcePermit(ID)), 
 				readyForPermit(false), 
 				selfStakeholderID(ID), 
@@ -118,11 +130,11 @@ event module {
 				rejectedConcurrentPermits(X)) + insert(readyForPermit(true), oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
 			}
 			
-		%run only when target is not reached
-		if bel(targetReached(false)) then {
+		% Run only when target is not reached yet.
+		if bel( targetReached(false)) then {
 			
-			if bel(selfStakeholderID(1)) then HousingEvent.
-			if bel(selfStakeholderID(2)) then CompanyEvent.
+			if bel( selfStakeholderID(1)) then HousingEvent.
+			if bel( selfStakeholderID(2)) then CompanyEvent.
 		
 		}
 	}
