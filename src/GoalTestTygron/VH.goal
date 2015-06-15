@@ -14,17 +14,26 @@ init module {
 		newBudget(Current,Surface, Cost, New) :- New is Current-(Surface*Cost).
 		calculateNeededLand(Perc, Surf) :- standardPrice(X), budget(Current), Surf is (Current*(Perc/100))/X.
 		oldNewPercentage(Rejected, NewPercentage) :- NewPercentage is 50-Rejected*10.
-		rejectedPermits(X, Y) :- Y is X + 1.
+		rejectedPermits(Current, New) :- New is Current + 1.
 	}
 	
 	beliefs {
 		%Belief that the stakeholder has no land
 		targetReached(false).
+		
+		%Current price for land
 		standardPrice(400).
+		
+		%Current owned land 
 		land(0).
 		
+		%Current permit state
 		readyForPermit.
+		
+		%Percentage to use when buying
 		percentage(50).
+		
+		%Numeber rejected permits
 		rejectedConcurrentPermits(0).
 		
 		%---- Self hardcoded
