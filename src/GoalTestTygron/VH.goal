@@ -10,49 +10,53 @@
 init module {
 	knowledge {
 		
-		%budgetLand(Current, X, Y, R) :- R is Current/X*Y.
+		updateIncLand(Old, Surface, New):- New is Old+Surface.
+		updateDecLand(Old, Surface, New):- New is Old-Surface.
+		newBudget(Current,Surface, Cost, New) :- New is Current-(Surface*Cost).
+		calculateNeededLand(Perc, Surf) :- standardPrice(X), budget(Current), Surf is (Current*(Perc/100))/X.
 	}
 	
 	beliefs {
 		%Belief that the stakeholder has no land
+		targetReached(false).
 		standardPrice(400).
-		selfStakeholderID(2).
 		land(0).
+		
+		%---- Self hardcoded
+		selfStakeholderID(1).
 	}
 	
 	program {
 		%Initialize itself with an ID.
-		if bel( percept(selfStakeholderID(ID))) then insert( selfStakeholderID(ID)).
+		if bel( percept(selfStakeholderID(ID))) then insert(selfStakeholderID(ID)).
 		
 		%Initialize the other stakeholders.
 		forall bel (percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
 		
 		% Initialize the indicators for this stakeholder with its importance.
-		forall bel (percept( initIndicator(StakeholderID, IndicatorID, Weight)), selfStakeholderID(StakeholderID)) do insert( initIndicator(StakeholderID, IndicatorID, Weight)).
+		forall bel (percept( initIndicator(StakeholderID, IndicatorID, Weight)), selfStakeholderID(StakeholderID)) do insert(initIndicator(StakeholderID, IndicatorID, Weight)).
 
 		%Initialize the targets with their current value and progress.
-		forall bel(percept(indicator(ID, Type, Name, Target, Current, Progress))) do insert(indicator(ID, Type, Name, Target, Current, Progress)).
+		forall bel(percept(indicator(ID, Type, Name, Progress, Current, Target))) do insert(indicator(ID, Type, Name, Progress, Current, Target)).
 		
 		%Initialize the buget of the stakeholder.
 		if bel( percept(indicator(IndiID, Type, _, _, Current, _)), Type == 'finance', selfStakeholderID(ID), initIndicator(ID, IndiID, _)) then insert( budget(Current)).
-		%if bel(percept(indicator(ID, Type, ID, _, Current, _)), Type == 'finance', selfStakeholderID(ID)) then insert( budget(Current)).
+	
 		
-		%Initialize all economies.		
-		forall bel(percept(economy(ID, Name, Type))) do insert(economy(ID, Name, Type)).
 	}
 		
 	actionspec{
 		
 		%Action for buying land.
 		buyLand(Surface, Cost) {
-			pre { true }
-			post{ true }
+			pre { land(Old), updateIncLand(Old,Surface, New)}
+			post{not(land(Old)),land(New)}
 		}
 		
 		%Action for building.
 		build(Surface, Type) {
-			pre { true }
-			post{ true }
+			pre { land(Old), updateDecLand(Old,Surface, New) }
+			post{not(land(Old)), land(New) }
 		}
 		
 	}
@@ -62,27 +66,37 @@ main module {
 	program {
 		
 		
-		% If the stakeholder is the housing coorporation, call HousingMain. This contains a main module for the housing.
-		if bel ( selfStakeholderID(1) ) then HousingMain.
-		
-		% If the stakeholder is the company, call CompanyMain. This contains a main module for the company.
-		%if bel ( selfStakeholderID(2) ) then CompanyMain.
-		
-		% Work in progress
-		if goal(buyNewLand), bel(budget(Current)) then buyLand(Current, Current).
+	forall bel(targetReached(false)) do {
+			if bel(selfStakeholderID(1)) then HousingMain.
+			if bel(selfStakeholderID(2)) then CompanyMain.
+		}
 	}
 }
 
 event module {
 	program {
 		% Always call the StandardEvents module, which contains events handling every stakeholder has (like budget changes).
-		if bel ( true ) then StandardEvents.
-		%not(targetReached)
 		
-		% If the stakeholder is the Housing coorporation, call the HousingEvent, which contains all the events specific for the housing stakeholder.
-%		if bel ( stakeHolderHousing ) then HousingEvent.
+		% Update budget on change
+		if bel( percept(indicator(IndiID, Type, _, _, New, _)), Type == 'finance', selfStakeholderID(ID),
+		 initIndicator(ID, IndiID, _), budget(X), X\=New) then delete(budget(X)) + insert( budget(New)).
 		
-		% If the stakeholder is the company, call the CompanyEvent, which contains all the events specific for the company stakeholder.
-%		if bel ( stakeHolderCompany ) then CompanyEvent.
+		%Update indicators on change.
+		forall bel( percept( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)),
+				indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
+		do delete(indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
+		+  insert(indicator(ID, Type, Name, NewProgress, NewCurrent, Target)).
+		
+		%Check if all the progresses are 100%. If so, head target is reach
+		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress == '100', targetReached(false)) then delete(targetReached(false)) + insert(targetReached(true)).  
+		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) then delete(targetReached(true)) + insert(targetReached(false)).  
+	
+		%run only when target is not reached
+		if bel(targetReached(false)) then {
+			
+			if bel(selfStakeholderID(1)) then HousingEvent.
+			if bel(selfStakeholderID(2)) then CompanyEvent.
+		
+		}
 	}
 }
