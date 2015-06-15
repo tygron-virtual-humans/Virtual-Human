@@ -14,7 +14,7 @@ init module {
 		newBudget(Current,Surface, Cost, New) :- New is Current-(Surface*Cost).
 		calculateNeededLand(Perc, Surf) :- standardPrice(X), budget(Current), Surf is (Current*(Perc/100))/X.
 		oldNewPercentage(Rejected, NewPercentage) :- NewPercentage is 50-Rejected*10.
-		rejectedPermits(X, Y) :- Y is X + 1
+		rejectedPermits(X, Y) :- Y is X + 1.
 	}
 	
 	beliefs {
@@ -93,12 +93,20 @@ event module {
 		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) then delete(targetReached(true)) + insert(targetReached(false)).  
 	
 		
-		%if bel( percept(responcePermit(ID)), waitingForPermit, selfStakeholderID(ID), oldBudget(OldBudget), budget(CurrentBudget), OldBudget \= CurrentBudget, rejectedPermits(X))
-		%		then delete(waitingForPermit, oldBudget(OldBudget), rejectedPermits(X))) + insert(readyForPermit, oldBudget(CurrentBudget), rejectedPermits(0)).
+		if bel( percept(responcePermit(ID)), waitingForPermit, selfStakeholderID(ID), oldBudget(OldBudget), budget(CurrentBudget), OldBudget \= CurrentBudget, rejectedConcurrentPermits(X))
+				then delete(waitingForPermit, oldBudget(OldBudget), rejectedConcurrentPermits(X)) + insert(readyForPermit, oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
 		
 		
-		%if bel( percept(responcePermit(ID)), waitingForPermit, selfStakeholderID(ID), oldBudget(OldBudget), budget(CurrentBudget), OldBudget == CurrentBudget, rejected(X), rejectedPermits(X, Y))
-		%		then delete(rejectedPermits(X)) + insert(rejectedPermits(Y))).
+		if bel( percept(responcePermit(ID)), 
+				waitingForPermit, 
+				selfStakeholderID(ID), 
+				oldBudget(OldBudget), 
+				budget(CurrentBudget), 
+				OldBudget == CurrentBudget, 
+				rejectedConcurrentPermits(X), 
+				rejectedPermits(X, Y))
+			then delete(rejectedConcurrentPermits(X))
+			 + insert(rejectedConcurrentPermits(Y)).
 		
 		%run only when target is not reached
 		if bel(targetReached(false)) then {

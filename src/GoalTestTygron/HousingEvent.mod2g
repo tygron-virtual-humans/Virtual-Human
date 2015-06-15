@@ -1,5 +1,8 @@
 module HousingEvent{
 	program{
+		%if bel(rejectedConcurrentPermits(X), waitingForPermit, X < 5, percentage(OldPercentage), oldNewPercentage(X, NewPercentage)) 
+		%					then delete(percentage(OldPercentage)) + insert(percentage(NewPercentage)).
+		
 		
 		%if bel( land(X), X>0) then adopt(buildHouses(X,1)).
 
