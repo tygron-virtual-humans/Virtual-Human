@@ -71,13 +71,13 @@ init module {
 		% Action for buying land.
 		buyLand(Surface, Cost) {
 			pre { land(Old), updateIncLand(Old,Surface, New)}
-			post{ not(land(Old)),land(New)}
+			post{not(land(Old)),oldLand(Old),land(New)}
 		}
 		
 		% Action for building.
 		build(Surface, Type) {
-			pre { land(Old), updateDecLand(Old,Surface, New)}
-			post{ not(land(Old)), land(New)}
+			pre { land(Old), updateDecLand(Old,Surface, New) }
+			post{not(land(Old)), oldLand(Old),land(New) }
 		}
 	}
 }
@@ -121,13 +121,13 @@ event module {
 				oldBudget(OldBudget), 
 				budget(CurrentBudget), 
 				rejectedConcurrentPermits(X), 
-				rejectedPermits(Current, New))
+				rejectedPermits(Current, New),
+				oldLand(Old),
+				land(New))
 			then  {
-				% The budget has not changed, so the permit was rejected.
-				if bel( OldBudget == CurrentBudget) then delete( rejectedConcurrentPermits(Current)) + insert( rejectedConcurrentPermits(New)).
-				% The budget has changed, so the permit was accepted.
-				if bel( OldBudget \= CurrentBudget ) then delete( readyForPermit(false), oldBudget(OldBudget),
-				rejectedConcurrentPermits(X)) + insert( readyForPermit(true), oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
+				if bel(OldBudget == CurrentBudget) then delete(rejectedConcurrentPermits(Current), land(New)) + insert(rejectedConcurrentPermits(New),land(Old)).
+				if bel(OldBudget \= CurrentBudget ) then delete(readyForPermit(false), oldBudget(OldBudget),
+				rejectedConcurrentPermits(X)) + insert(readyForPermit(true), oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
 			}
 			
 		% Run only when target is not reached yet.
