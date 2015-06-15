@@ -17,8 +17,13 @@ init module {
 		calculateNeededLand(Perc, Surf) :- standardPrice(PricePerSquare), budget(Current), Surf is (Current*(Perc/100))/PricePerSquare.
 		% Decreases the amount of land you buy for every time your request to buy land has been rejected.
 		oldNewPercentage(Rejected, NewPercentage) :- NewPercentage is 50-Rejected*10.
+<<<<<<< HEAD
+		% A counter that counts how often a permit has been rejected in a row.
+		rejectedPermits(Current, New) :- New is Current + 1.
+=======
 		rejectedPermits(X, Y) :- Y is X + 1.
 		houseParkRatio(Surface, Houses, Parks) :- Houses is Surface * 0.75, Parks is Surface * 0.25.
+>>>>>>> Added strategy, mostly working for some annoying bug
 	}
 	
 	beliefs {
@@ -71,7 +76,11 @@ init module {
 		% Action for buying land.
 		buyLand(Surface, Cost) {
 			pre { land(Old), updateIncLand(Old,Surface, New)}
+<<<<<<< HEAD
 			post{not(land(Old)),oldLand(Old),land(New)}
+=======
+			post{not(land(Old)), land(New)}
+>>>>>>> Added strategy, mostly working for some annoying bug
 		}
 		
 		% Action for building.
