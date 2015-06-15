@@ -17,14 +17,14 @@ init module {
 		calculateNeededLand(Perc, Surf) :- standardPrice(PricePerSquare), budget(Current), Surf is (Current*(Perc/100))/PricePerSquare.
 		% Decreases the amount of land you buy for every time your request to buy land has been rejected.
 		oldNewPercentage(Rejected, NewPercentage) :- NewPercentage is 50-Rejected*10.
-		rejectedPermits(X, Y) :- Y is X + 1.
-		houseParkRatio(Surface, Houses, Parks) :- Houses is Surface * 0.75, Parks is Surface * 0.25.
+		rejectedPermits(Current, New) :- New is Current + 1.
 	}
 	
 	beliefs {
 		
 		% Boolean that shows whether the stakeholder has reached his goal yet.
 		targetReached(false).
+<<<<<<< HEAD
 	
 		% Standard price for each square of land.
 		standardPrice(400).
@@ -39,24 +39,35 @@ init module {
 		percentage(50).
 		
 		% Number of rejected permits in a row.
+=======
+		
+		%Current price for land
+		standardPrice(400).
+		
+		%Current owned land 
+		land(0).
+		
+		%Current permit state
+		readyForPermit.
+		
+		%Percentage to use when buying
+		percentage(50).
+		
+		%Numeber rejected permits
+>>>>>>> Add comments
 		rejectedConcurrentPermits(0).
 		
+		%---- Self hardcoded
+		selfStakeholderID(1).
 	}
 	
 	program {
-<<<<<<< HEAD
 				
 		% Initialize itself with an ID.
 		if bel( percept( selfStakeholderID(ID))) then insert( selfStakeholderID(ID)).
-=======
-		if bel (true) then insert( waitingForPermit) + delete(waitingForPermit).
 		
 		%Initialize itself with an ID.
-		if bel( percept(stakeholderSelf(ID))) then insert(selfStakeholderID(ID)).
->>>>>>> Small changes in VH.goal, so that the responcePermit/1 corresponds with the newly permits/1 percept added to the environment
-		
-		% Initialize the other stakeholders.
-		forall bel ( percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
+		if bel( percept(selfStakeholderID(ID))) then insert(selfStakeholderID(ID)).
 		
 		% Initialize the indicators for this stakeholder with its importance.
 		forall bel ( percept( initIndicator(StakeholderID, IndicatorID, Weight)), selfStakeholderID(StakeholderID)) 
@@ -76,7 +87,11 @@ init module {
 		% Action for buying land.
 		buyLand(Surface, Cost) {
 			pre { land(Old), updateIncLand(Old,Surface, New)}
+<<<<<<< HEAD
 			post{not(land(Old)),oldLand(Old),land(New)}
+=======
+			post{not(land(Old)),land(New)}
+>>>>>>> Add comments
 		}
 		
 		% Action for building.
@@ -108,48 +123,25 @@ event module {
 		% Update indicators on change.
 		forall bel( percept( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)),
 				indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
-<<<<<<< HEAD
 		do delete( indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
 		+  insert( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)).
-=======
-		do delete(indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
-		+  insert(indicator(ID, Type, Name, NewProgress, NewCurrent, Target)).
-		
-		%Check if all the progresses are 100%. If so, head target is reach
-		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress == '100', targetReached(false)) then delete(targetReached(false)) + insert(targetReached(true)).  
-		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) then delete(targetReached(true)) + insert(targetReached(false)).  
-	
-		
-		if bel( percept(permits(Amount)),
-				Amount == 0,
-				waitingForPermit,
-				selfStakeholderID(ID), 
-				oldBudget(OldBudget), 
-				budget(CurrentBudget), 
-				OldBudget \= CurrentBudget, 
-				rejectedConcurrentPermits(X))
-			then delete(waitingForPermit, oldBudget(OldBudget), rejectedConcurrentPermits(X))
-			+ insert(readyForPermit, oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
->>>>>>> Small changes in VH.goal, so that the responcePermit/1 corresponds with the newly permits/1 percept added to the environment
 		
 		% If the progress is 100, the target is reached and the agent stops.
 		if bel( indicator(ID, Type, Name, Progress, Current, Target), Progress == '100', targetReached(false)) 
 		then delete( targetReached(false)) + insert( targetReached(true)).  
 		
-<<<<<<< HEAD
 		% If one progress is not 100 yet, the target is not reached, so the agent still has to do actions.
 		if bel( indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) 
 		then delete( targetReached(true)) + insert( targetReached(false)).  
 	
-		% A stakeholder has asked for a permit and receives answer.		
+		
+		if bel( percept(responcePermit(ID)), waitingForPermit, selfStakeholderID(ID), oldBudget(OldBudget), budget(CurrentBudget), OldBudget \= CurrentBudget, rejectedConcurrentPermits(X))
+				then delete(waitingForPermit, oldBudget(OldBudget), rejectedConcurrentPermits(X)) + insert(readyForPermit, oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
+		
+		
 		if bel( percept(responcePermit(ID)), 
-				readyForPermit(false), 
+				waitingForPermit, 
 				selfStakeholderID(ID), 
-=======
-		if bel( percept(permits(Amount)),
-				Amount == 0, 
-				waitingForPermit,
->>>>>>> Small changes in VH.goal, so that the responcePermit/1 corresponds with the newly permits/1 percept added to the environment
 				oldBudget(OldBudget), 
 				budget(CurrentBudget), 
 				rejectedConcurrentPermits(X), 

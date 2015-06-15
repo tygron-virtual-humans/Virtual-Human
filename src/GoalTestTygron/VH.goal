@@ -17,8 +17,7 @@ init module {
 		calculateNeededLand(Perc, Surf) :- standardPrice(PricePerSquare), budget(Current), Surf is (Current*(Perc/100))/PricePerSquare.
 		% Decreases the amount of land you buy for every time your request to buy land has been rejected.
 		oldNewPercentage(Rejected, NewPercentage) :- NewPercentage is 50-Rejected*10.
-		rejectedPermits(X, Y) :- Y is X + 1.
-		houseParkRatio(Surface, Houses, Parks) :- Houses is Surface * 0.75, Parks is Surface * 0.25.
+		rejectedPermits(Current, New) :- New is Current + 1.
 	}
 	
 	beliefs {
@@ -49,7 +48,10 @@ init module {
 		if bel( percept( selfStakeholderID(ID))) then insert( selfStakeholderID(ID)).
 		
 		%Initialize itself with an ID.
-		if bel( percept(stakeholderSelf(ID))) then insert(selfStakeholderID(ID)).
+		if bel( percept(selfStakeholderID(ID))) then insert(selfStakeholderID(ID)).
+		
+		%Initialize the other stakeholders.
+		forall bel (percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
 		
 		% Initialize the indicators for this stakeholder with its importance.
 		forall bel ( percept( initIndicator(StakeholderID, IndicatorID, Weight)), selfStakeholderID(StakeholderID)) 
@@ -69,7 +71,7 @@ init module {
 		% Action for buying land.
 		buyLand(Surface, Cost) {
 			pre { land(Old), updateIncLand(Old,Surface, New)}
-			post{not(land(Old)),oldLand(Old),land(New)}
+			post{not(land(Old)),land(New)}
 		}
 		
 		% Action for building.
@@ -113,21 +115,13 @@ event module {
 		then delete( targetReached(true)) + insert( targetReached(false)).  
 	
 		
-		if bel( percept(permits(Amount)),
-				Amount == 0,
-				waitingForPermit,
+		if bel( percept(responcePermit(ID)), waitingForPermit, selfStakeholderID(ID), oldBudget(OldBudget), budget(CurrentBudget), OldBudget \= CurrentBudget, rejectedConcurrentPermits(X))
+				then delete(waitingForPermit, oldBudget(OldBudget), rejectedConcurrentPermits(X)) + insert(readyForPermit, oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
+		
+		
+		if bel( percept(responcePermit(ID)), 
+				waitingForPermit, 
 				selfStakeholderID(ID), 
-				oldBudget(OldBudget), 
-				budget(CurrentBudget), 
-				OldBudget \= CurrentBudget, 
-				rejectedConcurrentPermits(X))
-			then delete(waitingForPermit, oldBudget(OldBudget), rejectedConcurrentPermits(X))
-			+ insert(readyForPermit, oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
-		
-		
-		if bel( percept(permits(Amount)),
-				Amount == 0, 
-				waitingForPermit,
 				oldBudget(OldBudget), 
 				budget(CurrentBudget), 
 				rejectedConcurrentPermits(X), 
