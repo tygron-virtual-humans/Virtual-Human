@@ -1,6 +1,3 @@
-% Please do note that we are working with another group. Many percepts are made but not used, so 
-% everything we have here is just a 'guess', since it might be to difficult to implement it by the other group.
-
 #import "HousingMain.mod2g".
 #import "HousingEvent.mod2g".
 #import "CompanyMain.mod2g".
@@ -20,6 +17,7 @@ init module {
 	beliefs {
 		%Belief that the stakeholder has no land
 		targetReached(false).
+	
 		
 		%Current price for land
 		standardPrice(400).
@@ -28,7 +26,7 @@ init module {
 		land(0).
 		
 		%Current permit state
-		readyForPermit.
+		readyForPermit(true).
 		
 		%Percentage to use when buying
 		percentage(50).
@@ -41,8 +39,7 @@ init module {
 	}
 	
 	program {
-		if bel (true) then insert( waitingForPermit) + delete(waitingForPermit).
-		
+				
 		%Initialize itself with an ID.
 		if bel( percept(selfStakeholderID(ID))) then insert(selfStakeholderID(ID)).
 		
@@ -76,6 +73,8 @@ init module {
 
 main module {
 	program {	
+		
+		%Dynamic main change for the stakeholders
 		forall bel(targetReached(false)) do {
 			if bel(selfStakeholderID(1)) then HousingMain.
 			if bel(selfStakeholderID(2)) then CompanyMain.
@@ -85,7 +84,6 @@ main module {
 
 event module {
 	program {
-		% Always call the StandardEvents module, which contains events handling every stakeholder has (like budget changes).
 		
 		% Update budget on change
 		if bel( percept(indicator(IndiID, Type, _, _, New, _)), Type == 'finance', selfStakeholderID(ID),
@@ -101,22 +99,18 @@ event module {
 		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress == '100', targetReached(false)) then delete(targetReached(false)) + insert(targetReached(true)).  
 		if bel(indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) then delete(targetReached(true)) + insert(targetReached(false)).  
 	
-		
-		if bel( percept(responcePermit(ID)), waitingForPermit, selfStakeholderID(ID), oldBudget(OldBudget), budget(CurrentBudget), OldBudget \= CurrentBudget, rejectedConcurrentPermits(X))
-				then delete(waitingForPermit, oldBudget(OldBudget), rejectedConcurrentPermits(X)) + insert(readyForPermit, oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
-		
-		
+		%Permit handeling		
 		if bel( percept(responcePermit(ID)), 
-				waitingForPermit, 
+				readyForPermit(false), 
 				selfStakeholderID(ID), 
 				oldBudget(OldBudget), 
 				budget(CurrentBudget), 
-				OldBudget == CurrentBudget, 
 				rejectedConcurrentPermits(X), 
-				rejectedPermits(X, Y))
-			then delete(rejectedConcurrentPermits(X))
-			 + insert(rejectedConcurrentPermits(Y)).
-		
+				rejectedPermits(Current, New))
+			then  {
+				if (OldBudget == CurrentBudget) then delete(rejectedConcurrentPermits(Current)) + insert(rejectedConcurrentPermits(New)).
+				if (OldBudget \= CurrentBudget ) then delete(readyForPermit(false), oldBudget(OldBudget), rejectedConcurrentPermits(X)) + insert(readyForPermit(true), oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
+			}.
 		%run only when target is not reached
 		if bel(targetReached(false)) then {
 			
