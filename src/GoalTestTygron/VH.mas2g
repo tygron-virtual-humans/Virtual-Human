@@ -3,7 +3,6 @@ environment{
 	env = "tygron-connect-environment-1.0-20150616.144152-1-jar-with-dependencies.jar".
 	init = [
 		% These parameters are not mandatory, defaults are: stakeholder = 1, map = testmap and slot is random
-		% There is no other way to do this yet, since the other group is still working on this.
 	
 		% Stakeholder, 0 is muncipianity, 1 is the housing corporation, 2 is company
 		stakeholder = 1,
