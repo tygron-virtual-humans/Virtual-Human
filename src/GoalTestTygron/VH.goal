@@ -18,6 +18,7 @@ init module {
 		% Decreases the amount of land you buy for every time your request to buy land has been rejected.
 		oldNewPercentage(Rejected, NewPercentage) :- NewPercentage is 50-Rejected*10.
 		rejectedPermits(Current, New) :- New is Current + 1.
+		houseParkRatio(Surface, Houses, Parks) :- Houses is Surface * 0.75, Parks is Surface * 0.25.
 	}
 	
 	beliefs {
@@ -39,6 +40,9 @@ init module {
 		
 		% Number of rejected permits in a row.
 		rejectedConcurrentPermits(0).
+		
+		%Work around for nto working init module
+		
 		
 	}
 	

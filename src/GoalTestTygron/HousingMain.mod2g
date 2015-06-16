@@ -8,7 +8,7 @@ module HousingMain{
 				 calculateNeededLand(Percentage, Land)) then buyLand(Land, 400).		   
 		
 		
-		if bel( readyForPermit,
+		if bel( readyForPermit(true),
 				land(Surface),
 				Surface > 0,
 				rejectedConcurrentPermits(Rejected))
@@ -21,14 +21,14 @@ module HousingMain{
 		
 	   
 	   % Not working yet, for some reason it cannot adopt.
-		 if bel( readyForPermit, 
+		 if bel( readyForPermit(true), 
 				land(0),
 				standardPrice(Price)) 
 			then adopt( buyNewLand).
 				
 			
 		if bel( rejectedConcurrentPermits(Rejected), 
-				readyForPermit, 
+				readyForPermit(true), 
 				Rejected < 5, 
 				percentage(OldPercentage), 
 				oldNewPercentage(Rejected, NewPercentage)) 
