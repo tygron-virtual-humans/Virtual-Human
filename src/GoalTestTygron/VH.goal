@@ -41,8 +41,6 @@ init module {
 		% Number of rejected permits in a row.
 		rejectedConcurrentPermits(0).
 		
-		%---- Self hardcoded
-		selfStakeholderID(1).
 	}
 	
 	program {
@@ -50,8 +48,8 @@ init module {
 		% Initialize itself with an ID.
 		if bel( percept( selfStakeholderID(ID))) then insert( selfStakeholderID(ID)).
 		
-		% Initialize the other stakeholders.
-		forall bel ( percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
+		%Initialize itself with an ID.
+		if bel( percept(stakeholderSelf(ID))) then insert(selfStakeholderID(ID)).
 		
 		% Initialize the indicators for this stakeholder with its importance.
 		forall bel ( percept( initIndicator(StakeholderID, IndicatorID, Weight)), selfStakeholderID(StakeholderID)) 
@@ -114,10 +112,22 @@ event module {
 		if bel( indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) 
 		then delete( targetReached(true)) + insert( targetReached(false)).  
 	
-		% A stakeholder has asked for a permit and receives answer.		
-		if bel( percept(responcePermit(ID)), 
-				readyForPermit(false), 
+		
+		if bel( percept(permits(Amount)),
+				Amount == 0,
+				waitingForPermit,
 				selfStakeholderID(ID), 
+				oldBudget(OldBudget), 
+				budget(CurrentBudget), 
+				OldBudget \= CurrentBudget, 
+				rejectedConcurrentPermits(X))
+			then delete(waitingForPermit, oldBudget(OldBudget), rejectedConcurrentPermits(X))
+			+ insert(readyForPermit, oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
+		
+		
+		if bel( percept(permits(Amount)),
+				Amount == 0, 
+				waitingForPermit,
 				oldBudget(OldBudget), 
 				budget(CurrentBudget), 
 				rejectedConcurrentPermits(X), 
