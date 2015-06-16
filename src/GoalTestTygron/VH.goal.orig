@@ -1,0 +1,171 @@
+#import "HousingMain.mod2g".
+#import "HousingEvent.mod2g".
+#import "CompanyMain.mod2g".
+#import "CompanyEvent.mod2g".
+#import "StandardEvents.mod2g".
+
+init module {
+	knowledge {
+		
+		% Increments the amount of empty land when land has been bought.
+		updateIncLand(Old, Surface, New):- New is Old+Surface.
+		% Decreases the amount of empty land when buildings are built on the land.
+		updateDecLand(Old, Surface, New):- New is Old-Surface.
+		% Updates the budget when a stakeholders has bought something.
+		newBudget(Current,Surface, Cost, New) :- New is Current-(Surface*Cost).
+		% Calculates how much land will be bought from the current budget.
+		calculateNeededLand(Perc, Surf) :- standardPrice(PricePerSquare), budget(Current), Surf is (Current*(Perc/100))/PricePerSquare.
+		% Decreases the amount of land you buy for every time your request to buy land has been rejected.
+		oldNewPercentage(Rejected, NewPercentage) :- NewPercentage is 50-Rejected*10.
+		rejectedPermits(Current, New) :- New is Current + 1.
+	}
+	
+	beliefs {
+<<<<<<< HEAD
+=======
+		%Belief that the stakeholder has no land
+		targetReached(false).
+	
+>>>>>>> Cleanup for main - permits
+		
+		% Boolean that shows whether the stakeholder has reached his goal yet.
+		targetReached(false).
+	
+		% Standard price for each square of land.
+		standardPrice(400).
+		
+		% Current amount of empty land owned. 
+		land(0).
+		
+<<<<<<< HEAD
+		% Current permit state (whether he is waiting for a permit to be accepted or not).
+=======
+		%Current permit state
+>>>>>>> Cleanup for main - permits
+		readyForPermit(true).
+		
+		% Percetage of budget to use when buying land.
+		percentage(50).
+		
+		% Number of rejected permits in a row.
+		rejectedConcurrentPermits(0).
+		
+	}
+	
+	program {
+				
+<<<<<<< HEAD
+		% Initialize itself with an ID.
+		if bel( percept( selfStakeholderID(ID))) then insert( selfStakeholderID(ID)).
+		
+=======
+>>>>>>> Cleanup for main - permits
+		%Initialize itself with an ID.
+		if bel( percept(selfStakeholderID(ID))) then insert(selfStakeholderID(ID)).
+		
+		%Initialize the other stakeholders.
+		forall bel (percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
+		
+		% Initialize the indicators for this stakeholder with its importance.
+		forall bel ( percept( initIndicator(StakeholderID, IndicatorID, Weight)), selfStakeholderID(StakeholderID)) 
+		do insert( initIndicator(StakeholderID, IndicatorID, Weight)).
+
+		% Initialize the targets with their current value and progress.
+		forall bel( percept( indicator(ID, Type, Name, Progress, Current, Target))) 
+		do insert( indicator(ID, Type, Name, Progress, Current, Target)).
+		
+		% Initialize the buget of the stakeholder.
+		if bel( percept( indicator(IndiID, Type, _, _, Current, _)), Type == 'finance', selfStakeholderID(ID), initIndicator(ID, IndiID, _)) 
+		then insert( budget(Current), oldBudget(Current)).		
+	}
+		
+	actionspec{
+		
+		% Action for buying land.
+		buyLand(Surface, Cost) {
+			pre { land(Old), updateIncLand(Old,Surface, New)}
+			post{not(land(Old)),land(New)}
+		}
+		
+		% Action for building.
+		build(Surface, Type) {
+			pre { land(Old), updateDecLand(Old,Surface, New) }
+			post{not(land(Old)), oldLand(Old),land(New) }
+		}
+	}
+}
+
+main module {
+	program {	
+		
+<<<<<<< HEAD
+		% Dynamic main change for the stakeholders
+		forall bel( targetReached(false)) do {
+			if bel( selfStakeholderID(1)) then HousingMain.
+			if bel( selfStakeholderID(2)) then CompanyMain.
+=======
+		%Dynamic main change for the stakeholders
+		forall bel(targetReached(false)) do {
+			if bel(selfStakeholderID(1)) then HousingMain.
+			if bel(selfStakeholderID(2)) then CompanyMain.
+>>>>>>> Cleanup for main - permits
+		}
+	}
+}
+
+event module {
+	program {
+		
+		% Update budget on change
+		if bel( percept( indicator(IndiID, Type, _, _, New, _)), Type == 'finance', selfStakeholderID(ID),
+		 initIndicator(ID, IndiID, _), budget(X), X\=New) then delete( budget(X)) + insert( budget(New)).
+		
+		% Update indicators on change.
+		forall bel( percept( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)),
+				indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
+		do delete( indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
+		+  insert( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)).
+		
+		% If the progress is 100, the target is reached and the agent stops.
+		if bel( indicator(ID, Type, Name, Progress, Current, Target), Progress == '100', targetReached(false)) 
+		then delete( targetReached(false)) + insert( targetReached(true)).  
+		
+		% If one progress is not 100 yet, the target is not reached, so the agent still has to do actions.
+		if bel( indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) 
+		then delete( targetReached(true)) + insert( targetReached(false)).  
+	
+		%Permit handeling		
+		if bel( percept(responcePermit(ID)), 
+				readyForPermit(false), 
+				selfStakeholderID(ID), 
+				oldBudget(OldBudget), 
+				budget(CurrentBudget), 
+				rejectedConcurrentPermits(X), 
+<<<<<<< HEAD
+				rejectedPermits(Current, New),
+				oldLand(Old),
+				land(New))
+			then  {
+				if bel(OldBudget == CurrentBudget) then delete(rejectedConcurrentPermits(Current), land(New)) + insert(rejectedConcurrentPermits(New),land(Old)).
+				if bel(OldBudget \= CurrentBudget ) then delete(readyForPermit(false), oldBudget(OldBudget),
+				rejectedConcurrentPermits(X)) + insert(readyForPermit(true), oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
+			}
+			
+		% Run only when target is not reached yet.
+		if bel( targetReached(false)) then {
+=======
+				rejectedPermits(Current, New))
+			then  {
+				if (OldBudget == CurrentBudget) then delete(rejectedConcurrentPermits(Current)) + insert(rejectedConcurrentPermits(New)).
+				if (OldBudget \= CurrentBudget ) then delete(readyForPermit(false), oldBudget(OldBudget), rejectedConcurrentPermits(X)) + insert(readyForPermit(true), oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
+			}.
+		%run only when target is not reached
+		if bel(targetReached(false)) then {
+>>>>>>> Cleanup for main - permits
+			
+			if bel( selfStakeholderID(1)) then HousingEvent.
+			if bel( selfStakeholderID(2)) then CompanyEvent.
+		
+		}
+	}
+}

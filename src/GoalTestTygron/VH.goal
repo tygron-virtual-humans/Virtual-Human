@@ -17,7 +17,6 @@ init module {
 		calculateNeededLand(Perc, Surf) :- standardPrice(PricePerSquare), budget(Current), Surf is (Current*(Perc/100))/PricePerSquare.
 		% Decreases the amount of land you buy for every time your request to buy land has been rejected.
 		oldNewPercentage(Rejected, NewPercentage) :- NewPercentage is 50-Rejected*10.
-		% A counter that counts how often a permit has been rejected in a row.
 		rejectedPermits(Current, New) :- New is Current + 1.
 	}
 	
@@ -41,8 +40,6 @@ init module {
 		% Number of rejected permits in a row.
 		rejectedConcurrentPermits(0).
 		
-		%---- Self hardcoded
-		selfStakeholderID(1).
 	}
 	
 	program {
@@ -50,8 +47,11 @@ init module {
 		% Initialize itself with an ID.
 		if bel( percept( selfStakeholderID(ID))) then insert( selfStakeholderID(ID)).
 		
-		% Initialize the other stakeholders.
-		forall bel ( percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
+		%Initialize itself with an ID.
+		if bel( percept(selfStakeholderID(ID))) then insert(selfStakeholderID(ID)).
+		
+		%Initialize the other stakeholders.
+		forall bel (percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
 		
 		% Initialize the indicators for this stakeholder with its importance.
 		forall bel ( percept( initIndicator(StakeholderID, IndicatorID, Weight)), selfStakeholderID(StakeholderID)) 
@@ -71,7 +71,7 @@ init module {
 		% Action for buying land.
 		buyLand(Surface, Cost) {
 			pre { land(Old), updateIncLand(Old,Surface, New)}
-			post{not(land(Old)),oldLand(Old),land(New)}
+			post{not(land(Old)),land(New)}
 		}
 		
 		% Action for building.
@@ -85,10 +85,10 @@ init module {
 main module {
 	program {	
 		
-		% Dynamic main change for the stakeholders
-		forall bel( targetReached(false)) do {
-			if bel( selfStakeholderID(1)) then HousingMain.
-			if bel( selfStakeholderID(2)) then CompanyMain.
+		%Dynamic main change for the stakeholders
+		forall bel(targetReached(false)) do {
+			if bel(selfStakeholderID(1)) then HousingMain.
+			if bel(selfStakeholderID(2)) then CompanyMain.
 		}
 	}
 }
@@ -114,7 +114,7 @@ event module {
 		if bel( indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) 
 		then delete( targetReached(true)) + insert( targetReached(false)).  
 	
-		% A stakeholder has asked for a permit and receives answer.		
+		%Permit handeling		
 		if bel( percept(responcePermit(ID)), 
 				readyForPermit(false), 
 				selfStakeholderID(ID), 

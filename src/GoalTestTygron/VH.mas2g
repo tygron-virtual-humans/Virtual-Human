@@ -6,9 +6,9 @@ environment{
 		% There is no other way to do this yet, since the other group is still working on this.
 	
 		% Stakeholder, 0 is muncipianity, 1 is the housing corporation, 2 is company
-		stakeholder = 2,
+		stakeholder = 1,
 		map = "delft",
-		slot = 22
+		slot = 12
 	].
 }
 
