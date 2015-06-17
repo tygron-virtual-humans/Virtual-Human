@@ -18,7 +18,19 @@ masTest{
 					atend bel(percentage(50)).
 					atend bel(rejectedConcurrentPermits(0)).
 					
+					%Initialize program
+					atend bel(selfStakeholderID(2)).
 					
+					%test if it reconginizes all the stakeholders
+					atend bel(stakeholder(0, 'Municipality', 'Municipality')).
+					atend bel(stakeholder(1, 'Housing Corporation', 'DUWO')).
+					atend bel(stakeholder(2, 'Company', 'Company')).
+					atend not(bel(stakeholder(3, 'Company', _))).
+					
+					%test if the right indicators are inserted
+					atend bel(selfStakeholderID(X), initIndicator(X, _, _)).
+					atend bel(selfStakeholderID(ID), initIndicator(ID, InID, _), indicator(InID, _, _, _, _, _)).
+					eventually not(bel(selfStakeholderID(X), initIndicator(ID, InID, _), ID \= X, indicator(InID, _, _, _, _, _))).
 					
 					
 					
