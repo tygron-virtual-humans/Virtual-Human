@@ -9,8 +9,8 @@ module CompanyMain{
 				Surface > 0.0,
 				rejectedConcurrentPermits(Rejected))
 		   then {
-		   	if bel(Rejected == 0, indicator(2, 'company', _, R, _,_), R<100) then adopt(build(Surface, 3)).
-		   	if bel(Rejected == 0, indicator(2, 'company', _, R, _,_), R==100) then adopt(build(Surface, 2)).
+		   	if bel(Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress <100) then adopt(build(Surface, 3)).
+		   	if bel(Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress==100) then adopt(build(Surface, 2)).
 		   	if bel(	Rejected > 0, 
 		   			officesParkingRatio(Surface, OfficesSurface, ParkingSurface)) 
 		   	   then adopt(buildGoal(OfficesSurface, 3), buildGoal(ParkingSurface, 2)).
@@ -18,8 +18,12 @@ module CompanyMain{
 		
 		% Adopt the goal for buying new land if there is enough available land and there is no land in your possession.
 		if bel( readyForPermit(true), 
-				availableLand(0.0)) 
-			then adopt( buyNewLand).
+				availableLand(Surface),
+				Surface == 0.0,
+				percentage(Percentage), 
+				standardPrice(Cost), 
+				calculateNeededLand(Percentage, Land))				
+			then adopt( buyNewLand(Land, Cost)).
 				
 		% Calculate the percentage of budget you want to spend. 
 		if bel( rejectedConcurrentPermits(Rejected), 
