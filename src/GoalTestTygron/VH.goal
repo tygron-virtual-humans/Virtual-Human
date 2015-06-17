@@ -14,8 +14,11 @@ init module {
 		% Increment the number of rejected Permits.
 		rejectedPermits(Current, New) :- New is Current + 1.
 		
-		% Calculate the number needed per m2.
+		% Calculate the division of buildings for housing.
 		houseParkRatio(Surface, Houses, Parks) :- Houses is (Surface * 0.75), Parks is (Surface * 0.25).
+		
+		% Calculate the division of buildings for company.
+		officesParkingRatio(Surface, Offices, Parking) :- Offices is (Surface * 0.75), Parking is (Surface * 0.25).
 	}
 	
 	beliefs {

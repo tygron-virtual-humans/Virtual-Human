@@ -2,23 +2,25 @@ module CompanyMain{
 	
 	% Module for the company stakeholder.
 	program{
+		
+		% Build offices and parkingspace depending on the amount of owned land and amount of concurrent rejected permits.
 		if bel( readyForPermit(true),
-				land(Surface),
+				availableLand(Surface),
 				Surface > 0,
 				rejectedConcurrentPermits(Rejected))
 		   then {
 		   	if bel(Rejected == 0) then adopt(build(Surface, 4)). %if offices is 4
 		   	if bel(	Rejected > 0, 
 		   			officesParkingRatio(Surface, OfficesSurface, ParkingSurface)) 
-		   	   then adopt(build(OfficeSurface, 4, build(ParkingSurface, 3)).
+		   	   then adopt(build(OfficesSurface, 3), build(ParkingSurface, 2)).
 		   }
 		
-		
-		 if bel( readyForPermit(true), 
-				land(0)) 
+		% Adopt the goal for buying new land if there is enough available land and there is no land in your possession.
+		if bel( readyForPermit(true), 
+				availableLand(0)) 
 			then adopt( buyNewLand).
 				
-			
+		% Calculate the percentage of budget you want to spend. 
 		if bel( rejectedConcurrentPermits(Rejected), 
 				readyForPermit(true), 
 				Rejected < 5, 
