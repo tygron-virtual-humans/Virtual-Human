@@ -5,22 +5,22 @@
 init module {
 	knowledge {
 		
-		% Increments the amount of empty land when land has been bought.
+		% Increment the amount of empty land when land has been bought.
 		updateIncLand(Old, Surface, New):- New is Old+Surface.
 		
-		% Decreases the amount of empty land when buildings are built on the land.
+		% Decrease the amount of empty land when buildings are built on the land.
 		updateDecLand(Old, Surface, New):- New is Old-Surface.
 		
-		% Calculates how much land will be bought from the current budget.
+		% Calculate how much land will be bought from the current budget.
 		calculateNeededLand(Perc, Surf) :- standardPrice(PricePerSquare), budget(Current), Surf is (Current*(Perc/100))/PricePerSquare.
 		
-		% Decreases the amount of land you buy for every time your request to buy land has been rejected.
+		% Decrease the amount of land you buy for every time your request to buy land has been rejected.
 		oldNewPercentage(Rejected, NewPercentage) :- NewPercentage is 50-Rejected*10.
 		
-		% Increment number rejected Permits.
+		% Increment the number of rejected Permits.
 		rejectedPermits(Current, New) :- New is Current + 1.
 		
-		% Calculates the number needed per m2.
+		% Calculate the number needed per m2.
 		houseParkRatio(Surface, Houses, Parks) :- Houses is (Surface * 0.75), Parks is (Surface * 0.25).
 	}
 	
@@ -133,9 +133,8 @@ event module {
 		then delete( targetReached(true)) + insert( targetReached(false)).  
 	
 		%Permit handeling.	
-		if bel( percept(responcePermit(ID)), 
+		if bel( percept(permits(0)), 
 				readyForPermit(false), 
-				selfStakeholderID(ID), 
 				oldBudget(OldBudget), 
 				budget(CurrentBudget), 
 				rejectedConcurrentPermits(X), 
