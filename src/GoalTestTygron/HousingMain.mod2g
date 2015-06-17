@@ -3,24 +3,19 @@ module HousingMain{
 	program{
 		
 		%% Buy new land if it is your goal.
-		if goal( buyNewLand),
- 				 bel(percentage(Percentage),
-				 calculateNeededLand(Percentage, Land)) then buyLand(Land, 400).		   
-		
-		
+
 		if bel( readyForPermit(true),
 				land(Surface),
 				Surface > 0,
 				rejectedConcurrentPermits(Rejected))
 		   then {
-		   	if bel(Rejected == 0) then adopt(buildHouses(Surface, 1)).
+		   	if bel(Rejected == 0) then adopt(build(Surface, 1)).
 		   	if bel(	Rejected > 0, 
 		   			houseParkRatio(Surface, HouseSurface, ParkSurface)) 
-		   	   then adopt(buildHouses(HouseSurface, 1), buildParks(ParkSurface, 3)).
+		   	   then adopt(build(HouseSurface, 1), build(ParkSurface, 3)).
 		   }
 		
-	   
-	   % Not working yet, for some reason it cannot adopt.
+		
 		 if bel( readyForPermit(true), 
 				land(0),
 				standardPrice(Price)) 
@@ -34,10 +29,6 @@ module HousingMain{
 				oldNewPercentage(Rejected, NewPercentage)) 
 		   then delete(percentage(OldPercentage)) 
 		   + insert(percentage(NewPercentage)).
-							
-							
- 			%	if a-goal( buildParks(ParkSurface, Type)) then build(ParkSurface, Type).
-	%	if a-goal( buildHouses(HouseSurface, Type)) then build(HouseSurface, Type).
-		   
+
 	}
 }

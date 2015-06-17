@@ -1,8 +1,0 @@
-module StandardEvents{
-	program{	
-		
-		%If the stakeholder has no land, adopt buyNewLand
-		
-																					
-	}
-}

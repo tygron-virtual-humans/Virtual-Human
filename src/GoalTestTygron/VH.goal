@@ -2,27 +2,34 @@
 #import "HousingEvent.mod2g".
 #import "CompanyMain.mod2g".
 #import "CompanyEvent.mod2g".
-#import "StandardEvents.mod2g".
 
 init module {
 	knowledge {
 		
 		% Increments the amount of empty land when land has been bought.
 		updateIncLand(Old, Surface, New):- New is Old+Surface.
+		
 		% Decreases the amount of empty land when buildings are built on the land.
 		updateDecLand(Old, Surface, New):- New is Old-Surface.
+		
 		% Updates the budget when a stakeholders has bought something.
 		newBudget(Current,Surface, Cost, New) :- New is Current-(Surface*Cost).
+		
 		% Calculates how much land will be bought from the current budget.
 		calculateNeededLand(Perc, Surf) :- standardPrice(PricePerSquare), budget(Current), Surf is (Current*(Perc/100))/PricePerSquare.
+		
 		% Decreases the amount of land you buy for every time your request to buy land has been rejected.
 		oldNewPercentage(Rejected, NewPercentage) :- NewPercentage is 50-Rejected*10.
+		
+		% Increment number rejected Permits
 		rejectedPermits(Current, New) :- New is Current + 1.
+		
+		% Calculates the number needed per m2.
 		houseParkRatio(Surface, Houses, Parks) :- Houses is Surface * 0.75, Parks is Surface * 0.25.
 	}
 	
 	beliefs {
-	
+		
 		% Boolean that shows whether the stakeholder has reached his goal yet.
 		targetReached(false).
 	
@@ -39,18 +46,14 @@ init module {
 		percentage(50).
 		
 		% Number of rejected permits in a row.
-		rejectedConcurrentPermits(0).
-		
-		%Work around for nto working init module
-		
+		rejectedConcurrentPermits(0).	
 		
 	}
 	
 	program {
 				
-	
 		%Initialize itself with an ID.
-		if bel( percept(stakeholderSelf(ID))) then insert(selfStakeholderID(ID)).
+		if bel( percept(stakeholderSelf([ID]))) then insert(selfStakeholderID(ID)).
 		
 		%Initialize the other stakeholders.
 		forall bel (percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
@@ -72,14 +75,18 @@ init module {
 		
 		% Action for buying land.
 		buyLand(Surface, Cost) {
+			
 			pre { land(Old), updateIncLand(Old,Surface, New)}
-			post{not(land(Old)),land(New)}
+			post{not(land(Old)),oldLand(Old),land(New)}
+			
 		}
 		
 		% Action for building.
 		build(Surface, Type) {
+			
 			pre { land(Old), updateDecLand(Old,Surface, New) }
 			post{not(land(Old)), oldLand(Old),land(New) }
+			
 		}
 	}
 }
@@ -88,7 +95,9 @@ main module {
 	program {	
 		
 		%Dynamic main change for the stakeholders
-		forall bel(targetReached(false)) do {
+		if bel(targetReached(false)) then {
+			forall goal( build(Surface, Type)) do build(Surface, Type) + drop(build(Surface, Type)).
+			if goal( buyNewLand), bel(percentage(Percentage), standardPrice(Cost), calculateNeededLand(Percentage, Land)) then buyLand(Land, Cost).		 
 			if bel(selfStakeholderID(1)) then HousingMain.
 			if bel(selfStakeholderID(2)) then CompanyMain.
 		}
