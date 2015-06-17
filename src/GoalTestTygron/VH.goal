@@ -96,7 +96,12 @@ main module {
 		%Dynamic main change for the stakeholders
 		if bel(targetReached(false)) then {
 			if goal( build(Surface, Type)) then build(Surface, Type) + drop(build(Surface, Type)).
-			if goal( buyNewLand), bel(percentage(Percentage), standardPrice(Cost), calculateNeededLand(Percentage, Land)) then buyLand(Land, Cost).		 
+			if goal( buyNewLand), 
+				bel(percentage(Percentage), standardPrice(Cost), calculateNeededLand(Percentage, Land), availableLand(Surface), Surface>=Land) 
+				then buyLand(Land, Cost).		
+			if goal( buyNewLand), 
+				bel(percentage(Percentage), standardPrice(Cost), calculateNeededLand(Percentage, Land), availableLand(Surface), Surface<Land) 
+				then buyLand(Surface, Cost). 
 			if bel(selfStakeholderID(1)) then HousingMain.
 			if bel(selfStakeholderID(2)) then CompanyMain.
 		}
