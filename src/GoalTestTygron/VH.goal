@@ -1,7 +1,6 @@
 #import "HousingMain.mod2g".
-#import "HousingEvent.mod2g".
 #import "CompanyMain.mod2g".
-#import "CompanyEvent.mod2g".
+
 
 init module {
 	knowledge {
@@ -96,7 +95,7 @@ main module {
 		
 		%Dynamic main change for the stakeholders
 		if bel(targetReached(false)) then {
-			forall goal( build(Surface, Type)) do build(Surface, Type) + drop(build(Surface, Type)).
+			if goal( build(Surface, Type)) then build(Surface, Type) + drop(build(Surface, Type)).
 			if goal( buyNewLand), bel(percentage(Percentage), standardPrice(Cost), calculateNeededLand(Percentage, Land)) then buyLand(Land, Cost).		 
 			if bel(selfStakeholderID(1)) then HousingMain.
 			if bel(selfStakeholderID(2)) then CompanyMain.
@@ -140,13 +139,5 @@ event module {
 				if bel(OldBudget \= CurrentBudget ) then delete(readyForPermit(false), oldBudget(OldBudget),
 				rejectedConcurrentPermits(X)) + insert(readyForPermit(true), oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
 			}
-			
-		% Run only when target is not reached yet.
-		if bel( targetReached(false)) then {
-			
-			if bel( selfStakeholderID(1)) then HousingEvent.
-			if bel( selfStakeholderID(2)) then CompanyEvent.
-		
-		}
 	}
 }
