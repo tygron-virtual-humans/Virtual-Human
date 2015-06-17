@@ -13,7 +13,7 @@ module CompanyMain{
 		   	if bel(Rejected == 0, indicator(2, 'company', _, R, _,_), R==100) then adopt(build(Surface, 2)).
 		   	if bel(	Rejected > 0, 
 		   			officesParkingRatio(Surface, OfficesSurface, ParkingSurface)) 
-		   	   then adopt(build(OfficesSurface, 3), build(ParkingSurface, 2)).
+		   	   then adopt(buildGoal(OfficesSurface, 3), buildGoal(ParkingSurface, 2)).
 		   }
 		
 		% Adopt the goal for buying new land if there is enough available land and there is no land in your possession.
