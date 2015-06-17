@@ -9,7 +9,7 @@ module CompanyMain{
 				Surface > 0,
 				rejectedConcurrentPermits(Rejected))
 		   then {
-		   	if bel(Rejected == 0) then adopt(build(Surface, 4)). %if offices is 4
+		   	if bel(Rejected == 0) then adopt(build(Surface, 3)).
 		   	if bel(	Rejected > 0, 
 		   			officesParkingRatio(Surface, OfficesSurface, ParkingSurface)) 
 		   	   then adopt(build(OfficesSurface, 3), build(ParkingSurface, 2)).
