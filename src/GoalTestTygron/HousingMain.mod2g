@@ -5,19 +5,19 @@ module HousingMain{
 		% Build houses and parks depending on the amount of owned land and amount of concurrent rejected permits.
 		if bel( readyForPermit(true),
 				availableLand(Surface),
-				Surface > 0,
+				Surface > 0.0,
 				rejectedConcurrentPermits(Rejected))
 		   then {
 		   	if bel(Rejected == 0, indicator(1, 'housing', _, R, _,_), R<100) then adopt(build(Surface, 0)).
 		   	if bel(Rejected == 0, indicator(1, 'housing', _, R, _,_), R==100) then adopt(build(Surface, 1)).
 		   	if bel(	Rejected > 0, 
 		   			houseParkRatio(Surface, HouseSurface, ParkSurface)) 
-		   	   then adopt(build(HouseSurface, 0), build(ParkSurface, 1)).
+		   	   then adopt(buildGoal(HouseSurface, 0), buildGoal(ParkSurface, 1)).
 		   }
 		
 		% Adopt the goal for buying new land if there is enough available land and there is no land in your possession.
 		if bel( readyForPermit(true), 
-				availableLand(0)) 
+				availableLand(0.0)) 
 			then adopt( buyNewLand).
 				
 		% Calculate the percentage of budget you want to spend. 
@@ -28,6 +28,6 @@ module HousingMain{
 				oldNewPercentage(Rejected, NewPercentage)) 
 		   then delete(percentage(OldPercentage)) 
 		   + insert(percentage(NewPercentage)).
-
+			
 	}
 }
