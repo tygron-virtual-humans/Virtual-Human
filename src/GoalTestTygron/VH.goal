@@ -5,25 +5,16 @@
 init module {
 	knowledge {
 		
-		% Increments the amount of empty land when land has been bought.
-		updateIncLand(Old, Surface, New):- New is Old+Surface.
-		
-		% Decreases the amount of empty land when buildings are built on the land.
-		updateDecLand(Old, Surface, New):- New is Old-Surface.
-		
-		% Updates the budget when a stakeholders has bought something.
-		newBudget(Current,Surface, Cost, New) :- New is Current-(Surface*Cost).
-		
-		% Calculates how much land will be bought from the current budget.
+		% Calculate how much land will be bought from the current budget.
 		calculateNeededLand(Perc, Surf) :- standardPrice(PricePerSquare), budget(Current), Surf is (Current*(Perc/100))/PricePerSquare.
 		
-		% Decreases the amount of land you buy for every time your request to buy land has been rejected.
+		% Decrease the amount of land you buy for every time your request to buy land has been rejected.
 		oldNewPercentage(Rejected, NewPercentage) :- NewPercentage is 50-Rejected*10.
 		
-		% Increment number rejected Permits
+		% Increment the number of rejected Permits.
 		rejectedPermits(Current, New) :- New is Current + 1.
 		
-		% Calculates the number needed per m2.
+		% Calculate the number needed per m2.
 		houseParkRatio(Surface, Houses, Parks) :- Houses is (Surface * 0.75), Parks is (Surface * 0.25).
 	}
 	
@@ -34,9 +25,6 @@ init module {
 	
 		% Standard price for each square of land.
 		standardPrice(400).
-		
-		% Current amount of empty land owned. 
-		land(0).
 		
 		% Current permit state (whether he is waiting for a permit to be accepted or not).
 		readyForPermit(true).
@@ -68,6 +56,9 @@ init module {
 		% Initialize the buget of the stakeholder.
 		if bel( percept( indicator(IndiID, Type, _, _, Current, _)), Type == 'finance', selfStakeholderID(ID), initIndicator(ID, IndiID, _)) 
 		then insert( budget(Current), oldBudget(Current)).		
+		
+		% Initialize the amount of available land.
+		if bel(percept( availableLand(Surface))) then insert(availableLand(Surface)).
 	}
 		
 	actionspec{
@@ -75,16 +66,16 @@ init module {
 		% Action for buying land.
 		buyLand(Surface, Cost) {
 			
-			pre { land(Old), updateIncLand(Old,Surface, New)}
-			post{not(land(Old)),oldLand(Old),land(New)}
+			pre { true }
+			post{ true }
 			
 		}
 		
 		% Action for building.
 		build(Surface, Type) {
 			
-			pre { land(Old), updateDecLand(Old,Surface, New) }
-			post{not(land(Old)), oldLand(Old),land(New) }
+			pre { true }
+			post{ true }
 			
 		}
 	}
@@ -96,7 +87,9 @@ main module {
 		%Dynamic main change for the stakeholders
 		if bel(targetReached(false)) then {
 			if goal( build(Surface, Type)) then build(Surface, Type) + drop(build(Surface, Type)).
-			if goal( buyNewLand), bel(percentage(Percentage), standardPrice(Cost), calculateNeededLand(Percentage, Land)) then buyLand(Land, Cost).		 
+			if goal( buyNewLand), 
+				bel(percentage(Percentage), standardPrice(Cost), calculateNeededLand(Percentage, Land)) 
+				then buyLand(Land, Cost). 
 			if bel(selfStakeholderID(1)) then HousingMain.
 			if bel(selfStakeholderID(2)) then CompanyMain.
 		}
@@ -106,9 +99,12 @@ main module {
 event module {
 	program {
 		
-		% Update budget on change
+		% Update the amount of available land.
+		if bel( percept( availableLand(New)), availableLand(Old)) then delete(availableLand(Old)) + insert(availableLand(New)).
+		
+		% Update budget on change.
 		if bel( percept( indicator(IndiID, Type, _, _, New, _)), Type == 'finance', selfStakeholderID(ID),
-		 initIndicator(ID, IndiID, _), budget(X), X\=New) then delete( budget(X)) + insert( budget(New)).
+		 initIndicator(ID, IndiID, _), budget(Old), Old\=New) then delete( budget(Old)) + insert( budget(New)).
 		
 		% Update indicators on change.
 		forall bel( percept( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)),
@@ -124,18 +120,15 @@ event module {
 		if bel( indicator(ID, Type, Name, Progress, Current, Target), Progress \= '100', targetReached(true)) 
 		then delete( targetReached(true)) + insert( targetReached(false)).  
 	
-		%Permit handeling		
-		if bel( percept(responcePermit(ID)), 
+		%Permit handeling.	
+		if bel( percept(permits(0)), 
 				readyForPermit(false), 
-				selfStakeholderID(ID), 
 				oldBudget(OldBudget), 
 				budget(CurrentBudget), 
 				rejectedConcurrentPermits(X), 
-				rejectedPermits(Current, New),
-				oldLand(Old),
-				land(New))
+				rejectedPermits(Current, New))
 			then  {
-				if bel(OldBudget == CurrentBudget) then delete(rejectedConcurrentPermits(Current), land(New)) + insert(rejectedConcurrentPermits(New),land(Old)).
+				if bel(OldBudget == CurrentBudget) then delete(rejectedConcurrentPermits(Current)) + insert(rejectedConcurrentPermits(New)).
 				if bel(OldBudget \= CurrentBudget ) then delete(readyForPermit(false), oldBudget(OldBudget),
 				rejectedConcurrentPermits(X)) + insert(readyForPermit(true), oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
 			}
