@@ -17,8 +17,7 @@ module HousingMain{
 		
 		
 		 if bel( readyForPermit(true), 
-				land(0),
-				standardPrice(Price)) 
+				land(0)) 
 			then adopt( buyNewLand).
 				
 			

@@ -25,7 +25,7 @@ init module {
 		rejectedPermits(Current, New) :- New is Current + 1.
 		
 		% Calculates the number needed per m2.
-		houseParkRatio(Surface, Houses, Parks) :- Houses is Surface * 0.75, Parks is Surface * 0.25.
+		houseParkRatio(Surface, Houses, Parks) :- Houses is (Surface * 0.75), Parks is (Surface * 0.25).
 	}
 	
 	beliefs {
