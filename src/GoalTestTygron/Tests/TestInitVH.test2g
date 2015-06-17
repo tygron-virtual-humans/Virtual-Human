@@ -8,8 +8,6 @@ masTest{
 				evaluate{
 					
 								
-					%test if start budget is inserted
-					eventually bel(budget(Current)).
 					
 					%Initialize beliefs					
 					atend bel(targetReached(false)).
@@ -33,15 +31,19 @@ masTest{
 					atend not(bel(selfStakeholderID(X), initIndicator(ID, InID, _), ID \= X, indicator(InID, _, _, _, _, _))).
 					
 					%test if targets are set right
-					atend bel(indicator(0, finance, 'budget municipality', 10.0, 1000000.0, 100000.0)).
-					atend bel(indicator(4,finance,'budget company',0.0625,500000.0,8000000.0)).
-					atend bel(indicator(6,housing,'building company',0.0,0.0,12000.0)).
-					atend bel(indicator(1,parking,parking,1.2819334,1465.0522,1142.8457)).
-					atend bel(indicator(3,finance,'budget housing corporation',0.1,1000000.0,1.0E7)).
-					atend bel(indicator(5,housing,'building housing corporation',0.0,0.0,1000.0)).
-					atend bel(indicator(7,green,green,0.32368547,43256.625,133637.83)).
-					
-					%atend bel(indicator(3, finance, 'budget housing corporation', 0.1, 100000.0, 10000000.0)).
+					%
+					atend bel(indicator(_, _, _, _, _, _)).
+					%atend bel(indicator(0, finance, 'budget municipality', 10.0, 1000000.0, 100000.0)).
+					%atend bel(indicator(4,finance,'budget company',0.0625,500000.0,8000000.0)).
+					%atend bel(indicator(6,housing,'building company',0.0,0.0,12000.0)).
+					%atend bel(indicator(1,parking,parking,1.2819334,1465.0522,1142.8457)).
+					%atend bel(indicator(3,finance,'budget housing corporation',0.1,1000000.0,1.0E7)).
+					%atend bel(indicator(5,housing,'building housing corporation',0.0,0.0,1000.0)).
+					%atend bel(indicator(7,green,green,0.32368547,43256.625,133637.83)).
+
+					%Test if budgets amd land are set right
+					atend bel(budget(Current), oldBudget(Current)).
+					atend bel(availableLand(_)).
 					
 					
 				}  in do init.
