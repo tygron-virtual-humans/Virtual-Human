@@ -16,7 +16,7 @@ module HousingMain{
 		
 		% Adopt the goal for buying new land if there is enough available land and there is no land in your possession.
 		if bel( readyForPermit(true), 
-				availableLand=0) 
+				availableLand(0)) 
 			then adopt( buyNewLand).
 				
 		% Calculate the percentage of budget you want to spend. 
