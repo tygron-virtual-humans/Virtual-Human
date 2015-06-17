@@ -4,7 +4,7 @@ module HousingMain{
 		
 		% Build houses and parks depending on the amount of owned land and amount of concurrent rejected permits.
 		if bel( readyForPermit(true),
-				land(Surface),
+				availableLand(Surface),
 				Surface > 0,
 				rejectedConcurrentPermits(Rejected))
 		   then {
@@ -16,8 +16,7 @@ module HousingMain{
 		
 		% Adopt the goal for buying new land if there is enough available land and there is no land in your possession.
 		if bel( readyForPermit(true), 
-				land(0),
-				availableLand>0) 
+				availableLand=0) 
 			then adopt( buyNewLand).
 				
 		% Calculate the percentage of budget you want to spend. 

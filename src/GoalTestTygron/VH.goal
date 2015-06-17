@@ -5,12 +5,6 @@
 init module {
 	knowledge {
 		
-		% Increment the amount of empty land when land has been bought.
-		updateIncLand(Old, Surface, New):- New is Old+Surface.
-		
-		% Decrease the amount of empty land when buildings are built on the land.
-		updateDecLand(Old, Surface, New):- New is Old-Surface.
-		
 		% Calculate how much land will be bought from the current budget.
 		calculateNeededLand(Perc, Surf) :- standardPrice(PricePerSquare), budget(Current), Surf is (Current*(Perc/100))/PricePerSquare.
 		
@@ -31,9 +25,6 @@ init module {
 	
 		% Standard price for each square of land.
 		standardPrice(400).
-		
-		% Current amount of empty land owned. 
-		land(0).
 		
 		% Current permit state (whether he is waiting for a permit to be accepted or not).
 		readyForPermit(true).
@@ -66,7 +57,7 @@ init module {
 		if bel( percept( indicator(IndiID, Type, _, _, Current, _)), Type == 'finance', selfStakeholderID(ID), initIndicator(ID, IndiID, _)) 
 		then insert( budget(Current), oldBudget(Current)).		
 		
-		% Initialize the amount of available land to buy.
+		% Initialize the amount of available land.
 		if bel(percept( availableLand(Surface))) then insert(availableLand(Surface)).
 	}
 		
@@ -75,16 +66,16 @@ init module {
 		% Action for buying land.
 		buyLand(Surface, Cost) {
 			
-			pre { land(Old), updateIncLand(Old,Surface, New)}
-			post{not(land(Old)),oldLand(Old),land(New)}
+			pre { true }
+			post{ true }
 			
 		}
 		
 		% Action for building.
 		build(Surface, Type) {
 			
-			pre { land(Old), updateDecLand(Old,Surface, New) }
-			post{not(land(Old)), oldLand(Old),land(New) }
+			pre { true }
+			post{ true }
 			
 		}
 	}
@@ -97,11 +88,8 @@ main module {
 		if bel(targetReached(false)) then {
 			if goal( build(Surface, Type)) then build(Surface, Type) + drop(build(Surface, Type)).
 			if goal( buyNewLand), 
-				bel(percentage(Percentage), standardPrice(Cost), calculateNeededLand(Percentage, Land), availableLand(Surface), Surface>=Land) 
-				then buyLand(Land, Cost).		
-			if goal( buyNewLand), 
-				bel(percentage(Percentage), standardPrice(Cost), calculateNeededLand(Percentage, Land), availableLand(Surface), Surface<Land) 
-				then buyLand(Surface, Cost). 
+				bel(percentage(Percentage), standardPrice(Cost), calculateNeededLand(Percentage, Land)) 
+				then buyLand(Land, Cost). 
 			if bel(selfStakeholderID(1)) then HousingMain.
 			if bel(selfStakeholderID(2)) then CompanyMain.
 		}
@@ -138,11 +126,9 @@ event module {
 				oldBudget(OldBudget), 
 				budget(CurrentBudget), 
 				rejectedConcurrentPermits(X), 
-				rejectedPermits(Current, New),
-				oldLand(Old),
-				land(New))
+				rejectedPermits(Current, New))
 			then  {
-				if bel(OldBudget == CurrentBudget) then delete(rejectedConcurrentPermits(Current), land(New)) + insert(rejectedConcurrentPermits(New),land(Old)).
+				if bel(OldBudget == CurrentBudget) then delete(rejectedConcurrentPermits(Current)) + insert(rejectedConcurrentPermits(New)).
 				if bel(OldBudget \= CurrentBudget ) then delete(readyForPermit(false), oldBudget(OldBudget),
 				rejectedConcurrentPermits(X)) + insert(readyForPermit(true), oldBudget(CurrentBudget), rejectedConcurrentPermits(0)).
 			}
