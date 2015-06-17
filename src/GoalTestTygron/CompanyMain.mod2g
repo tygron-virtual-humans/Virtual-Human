@@ -2,12 +2,7 @@ module CompanyMain{
 	
 	% Module for the company stakeholder.
 	program{
-		if goal(buildOff(X,Y)) then build(X,Y) + drop(buildOff(X,Y)).
-		if goal(buyNewLand(Need,X)) then buyLand(Need,X) + drop(buyNewLand(Need,X)).
 		
-		if bel( land(Surface), Surface = 0, calculateNeededLand(50,Need), standardPrice(X)) then adopt(buyNewLand(Need,X)).
-		
-		if bel(land(X), X>0) then adopt(buildOff(X,3)).
 					
 	}
 }
