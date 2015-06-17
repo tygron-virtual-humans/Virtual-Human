@@ -22,7 +22,7 @@ init module {
 	}
 	
 	beliefs {
-		
+	
 		% Boolean that shows whether the stakeholder has reached his goal yet.
 		targetReached(false).
 	
@@ -48,11 +48,9 @@ init module {
 	
 	program {
 				
-		% Initialize itself with an ID.
-		if bel( percept( selfStakeholderID(ID))) then insert( selfStakeholderID(ID)).
-		
+	
 		%Initialize itself with an ID.
-		if bel( percept(selfStakeholderID(ID))) then insert(selfStakeholderID(ID)).
+		if bel( percept(stakeholderSelf(ID))) then insert(selfStakeholderID(ID)).
 		
 		%Initialize the other stakeholders.
 		forall bel (percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
