@@ -22,7 +22,6 @@ init module {
 	}
 	
 	beliefs {
-		
 		% Boolean that shows whether the stakeholder has reached his goal yet.
 		targetReached(false).
 	
@@ -37,6 +36,7 @@ init module {
 		
 		% Number of rejected permits in a row.
 		rejectedConcurrentPermits(0).	
+
 		
 	}
 	
@@ -89,11 +89,13 @@ main module {
 		
 		%Dynamic main change for the stakeholders
 		if bel(targetReached(false)) then {
-			if goal( build(Surface, Type)) then build(Surface, Type) + drop(build(Surface, Type)).
-			if goal( buyNewLand), 
-				bel(percentage(Percentage), standardPrice(Cost), calculateNeededLand(Percentage, Land)) 
+			if goal( buyNewLand), 	bel(percentage(Percentage), standardPrice(Cost), calculateNeededLand(Percentage, Land)) 
 				then buyLand(Land, Cost). 
+			if goal( buildGoal(Surface, Type)) then build(Surface, Type).
+			
+			
 			if bel(selfStakeholderID(1)) then HousingMain.
+			
 			if bel(selfStakeholderID(2)) then CompanyMain.
 		}
 	}
@@ -106,7 +108,7 @@ event module {
 		if bel( percept( availableLand(New)), availableLand(Old)) then delete(availableLand(Old)) + insert(availableLand(New)).
 		
 		% Update budget on change.
-		if bel( percept( indicator(IndiID, Type, _, _, New, _)), Type == 'finance', selfStakeholderID(ID),
+		if bel( percept( indicator(IndiID, Type, _, _, New, _)), Type == "finance", selfStakeholderID(ID),
 		 initIndicator(ID, IndiID, _), budget(Old), Old\=New) then delete( budget(Old)) + insert( budget(New)).
 		
 		% Update indicators on change.
