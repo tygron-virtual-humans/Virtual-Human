@@ -9,10 +9,10 @@ module HousingMain{
 				Surface > 0,
 				rejectedConcurrentPermits(Rejected))
 		   then {
-		   	if bel(Rejected == 0) then adopt(build(Surface, 1)).
+		   	if bel(Rejected == 0) then adopt(build(Surface, 0)).
 		   	if bel(	Rejected > 0, 
 		   			houseParkRatio(Surface, HouseSurface, ParkSurface)) 
-		   	   then adopt(build(HouseSurface, 1), build(ParkSurface, 3)).
+		   	   then adopt(build(HouseSurface, 0), build(ParkSurface, 1)).
 		   }
 		
 		
