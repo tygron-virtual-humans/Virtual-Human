@@ -7,23 +7,43 @@ masTest{
 			
 				evaluate{
 					
-					%test if it recognizes itself.
-					eventually bel(selfStakeholderID(_)).
+								
+					
+					%Initialize beliefs					
+					atend bel(targetReached(false)).
+					atend bel(standardPrice(400)).
+					atend bel(readyForPermit(true)).
+					atend bel(percentage(50)).
+					atend bel(rejectedConcurrentPermits(0)).
+					
+					%Initialize program
+					atend bel(selfStakeholderID(_)). 
 					
 					%test if it reconginizes all the stakeholders
-					eventually bel(stakeholder(0, 'Municipality', 'Municipality')).
-					eventually bel(stakeholder(1, 'Housing Corporation', 'DUWO')).
-					eventually bel(stakeholder(2, 'Company', 'Company')).
-					eventually not(bel(stakeholder(3, 'Company', _))).
+					atend bel(stakeholder(0, 'Municipality', 'Municipality')).
+					atend bel(stakeholder(1, 'Housing Corporation', 'DUWO')).
+					atend bel(stakeholder(2, 'Company', 'Company')).
+					atend not(bel(stakeholder(3, 'Company', _))).
 					
 					%test if the right indicators are inserted
-					eventually bel(selfStakeholderID(X), initIndicator(X, _, _)).
-					eventually bel(selfStakeholderID(ID), initIndicator(ID, InID, _), indicator(InID, _, _, _, _, _)).
-					eventually not(bel(selfStakeholderID(X), initIndicator(ID, InID, _), ID \= X, indicator(InID, _, _, _, _, _))).
-
+					atend bel(selfStakeholderID(X), initIndicator(X, _, _)).
+					atend bel(selfStakeholderID(ID), initIndicator(ID, InID, _), indicator(InID, _, _, _, _, _)).
+					atend not(bel(selfStakeholderID(X), initIndicator(ID, InID, _), ID \= X, indicator(InID, _, _, _, _, _))).
 					
-					%test if start budget is inserted
-					eventually bel(budget(Current)).
+					%test if targets are set right
+					%
+					atend bel(indicator(_, _, _, _, _, _)).
+					%atend bel(indicator(0, finance, 'budget municipality', 10.0, 1000000.0, 100000.0)).
+					%atend bel(indicator(4,finance,'budget company',0.0625,500000.0,8000000.0)).
+					%atend bel(indicator(6,housing,'building company',0.0,0.0,12000.0)).
+					%atend bel(indicator(1,parking,parking,1.2819334,1465.0522,1142.8457)).
+					%atend bel(indicator(3,finance,'budget housing corporation',0.1,1000000.0,1.0E7)).
+					%atend bel(indicator(5,housing,'building housing corporation',0.0,0.0,1000.0)).
+					%atend bel(indicator(7,green,green,0.32368547,43256.625,133637.83)).
+
+					%Test if budgets amd land are set right
+					atend bel(budget(Current), oldBudget(Current)).
+					atend bel(availableLand(_)).
 					
 					
 				}  in do init.
