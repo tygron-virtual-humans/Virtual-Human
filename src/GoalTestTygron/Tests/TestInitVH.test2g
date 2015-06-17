@@ -19,7 +19,7 @@ masTest{
 					atend bel(rejectedConcurrentPermits(0)).
 					
 					%Initialize program
-					atend bel(selfStakeholderID(2)).
+					atend bel(selfStakeholderID(_)). 
 					
 					%test if it reconginizes all the stakeholders
 					atend bel(stakeholder(0, 'Municipality', 'Municipality')).
@@ -30,8 +30,18 @@ masTest{
 					%test if the right indicators are inserted
 					atend bel(selfStakeholderID(X), initIndicator(X, _, _)).
 					atend bel(selfStakeholderID(ID), initIndicator(ID, InID, _), indicator(InID, _, _, _, _, _)).
-					eventually not(bel(selfStakeholderID(X), initIndicator(ID, InID, _), ID \= X, indicator(InID, _, _, _, _, _))).
+					atend not(bel(selfStakeholderID(X), initIndicator(ID, InID, _), ID \= X, indicator(InID, _, _, _, _, _))).
 					
+					%test if targets are set right
+					atend bel(indicator(0, finance, 'budget municipality', 10.0, 1000000.0, 100000.0)).
+					atend bel(indicator(4,finance,'budget company',0.0625,500000.0,8000000.0)).
+					atend bel(indicator(6,housing,'building company',0.0,0.0,12000.0)).
+					atend bel(indicator(1,parking,parking,1.2819334,1465.0522,1142.8457)).
+					atend bel(indicator(3,finance,'budget housing corporation',0.1,1000000.0,1.0E7)).
+					atend bel(indicator(5,housing,'building housing corporation',0.0,0.0,1000.0)).
+					atend bel(indicator(7,green,green,0.32368547,43256.625,133637.83)).
+					
+					%atend bel(indicator(3, finance, 'budget housing corporation', 0.1, 100000.0, 10000000.0)).
 					
 					
 				}  in do init.
