@@ -6,13 +6,13 @@ init module {
 	knowledge {
 		
 		% Needed to check if our permit for the land is accepted.
-		buyNewLand(Surface, Cost) :- availableLand(CurrentSurface), oldAmoundOfLand(OldSurface), CurrentSurface \= OldSurface.
+		buyLandGoal(Surface, Cost) :- availableLand(CurrentSurface), oldAmoundOfLand(OldSurface), CurrentSurface \= OldSurface.
 
 		% Needed to check if our permit for the buildings is accepted.
 		buildGoal(Surface, Type) :- availableLand(CurrentSurface), oldAmoundOfLand(OldSurface), CurrentSurface \= OldSurface.
 		
 		% Amount of rejected permits in a row.
-		rejectedPermit(Rejected) :- Rejected > 0.
+		rejectedPermitGoal(Rejected) :- Rejected > 0.
 		
 		% Calculate how much land will be bought from the current budget.
 		calculateNeededLand(Perc, Surf) :- standardPrice(PricePerSquare), budget(Current), Surf is (Current*(Perc/100))/PricePerSquare.
@@ -100,7 +100,7 @@ main module {
 		if bel( targetReached(false)) then {
 			
 			% If you have the goal to buy land, buy land and ask for a permit.
-			if  goal( buyNewLand(Surface, Cost)), 
+			if  goal( buyLandGoal(Surface, Cost)), 
 				bel( readyForPermit(true))
 			  then buyLand(Surface, Cost) 
 			  + delete( readyForPermit(true)) 
@@ -131,7 +131,7 @@ event module {
 				rejectedConcurrentPermits(Current)) 
 		  then {
 		  		% The percept available land was percepted, so the permit was accepted
-		  		if bel(	percept( availableLand(X))) 
+		  		if bel(	percept( availableLand(Surface))) 
 		  		  then delete(	readyForPermit(false),
 		  		  				oldBudget(OldBudget),
 								rejectedConcurrentPermits(Current)) 
@@ -150,6 +150,13 @@ event module {
 				  				rejectedConcurrentPermits(Amount)).
 				}
 		
+		if 	goal(buildGoal(_, Type)),
+			bel( readyForPermit(false),
+				 Type = 1 ; Type = 2,
+				 percept( availableLand(NewSurface)), 
+				 availableLand(OldSurface)) 
+		  then delete(availableLand(OldSurface), readyForPermit(false)) 
+		  + insert(availableLand(NewSurface), readyForPermit(true)).		
 		
 		% Update the amount of available land.
 		if bel( percept( availableLand(NewSurface)), 
