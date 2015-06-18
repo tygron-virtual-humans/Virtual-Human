@@ -150,6 +150,13 @@ event module {
 				  				rejectedConcurrentPermits(Amount)).
 				}
 		
+		if 	goal(buildGoal(_, Type)),
+			bel( readyForPermit(false),
+				 Type = 1 ; Type = 2,
+				 percept( availableLand(NewSurface)), 
+				 availableLand(OldSurface)) 
+		  then delete(availableLand(OldSurface), readyForPermit(false)) 
+		  + insert(availableLand(NewSurface), readyForPermit(true)).		
 		
 		% Update the amount of available land.
 		if bel( percept( availableLand(NewSurface)), 

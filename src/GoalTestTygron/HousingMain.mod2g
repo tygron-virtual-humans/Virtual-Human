@@ -8,22 +8,32 @@ module HousingMain{
 		if bel( readyForPermit(true),
 				availableLand(Surface),
 				Surface > 0.0,
-				rejectedConcurrentPermits(Rejected))
+				rejectedConcurrentPermits(Rejected),
+				oldAmountOfLand(OutdatedSurface))
 		   then {
-		   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress <100) then adopt(buildGoal(Surface, 0)).
-		   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress==100) then adopt(buildGoal(Surface, 1)).
-		   	if bel(	Rejected > 0, 	houseParkRatio(Surface, HouseSurface, ParkSurface)) 
-		   	   then adopt(buildGoal(HouseSurface, 0), buildGoal(ParkSurface, 1), rejectedPermit(Rejected)).
+		   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress <100) 
+		   	  then delete(oldAmountOfLand(OutdatedSurface))
+		   	  + insert(oldAmountOfLand(Surface)) 
+		   	  + adopt(buildGoal(Surface, 0)).
+		   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress==100) 
+		   	  then delete(oldAmountOfLand(OutdatedSurface)) 
+		   	  + insert(oldAmountOfLand(Surface)) 
+		   	  + adopt(buildGoal(Surface, 1)).
+		   	if bel(	Rejected > 0, houseParkRatio(Surface, Houses, Parks)) 
+		   	  then delete(oldAmountOfLand(OutdatedSurface), rejectedConcurrentPermits(Rejected)) 
+		   	  + insert(oldAmountOfLand(Surface), rejectedConcurrentPermits(0)) 
+		   	  + adopt(buildGoal(Parks, 1)) 
+		   	  + adopt(rejectedPermitGoal(Rejected)).
 		   }
-		
 		% Adopt the goal for buying new land if there is land in your possession.
+		
 		if bel( readyForPermit(true), 
 				availableLand(Surface),
 				Surface < 0.5,
 				percentage(Percentage), 
 				standardPrice(Cost), 
 				calculateNeededLand(Percentage, Land))				
-			then adopt( buyNewLand(Land, Cost)).
+			then adopt( buyLandGoal(Land, Cost)).
 				
 		
 		% Calculate the percentage of budget you want to spend. 
