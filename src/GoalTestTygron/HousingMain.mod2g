@@ -12,7 +12,7 @@ module HousingMain{
 		   then {
 		   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress <100) then adopt(buildGoal(Surface, 0)).
 		   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress==100) then adopt(buildGoal(Surface, 1)).
-		   	if bel(	Rejected > 0), 	houseParkRatio(Surface, HouseSurface, ParkSurface)) 
+		   	if bel(	Rejected > 0, 	houseParkRatio(Surface, HouseSurface, ParkSurface)) 
 		   	   then adopt(buildGoal(HouseSurface, 0), buildGoal(ParkSurface, 1), rejectedPermit(Rejected)).
 		   }
 		

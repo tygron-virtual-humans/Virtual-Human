@@ -5,10 +5,13 @@
 init module {
 	knowledge {
 		
+		% Needed to check if our permit for the land is accepted.
 		buyNewLand(Surface, Cost) :- availableLand(CurrentSurface), oldAmoundOfLand(OldSurface), CurrentSurface \= OldSurface.
 
+		% Needed to check if our permit for the buildings is accepted.
 		buildGoal(Surface, Type) :- availableLand(CurrentSurface), oldAmoundOfLand(OldSurface), CurrentSurface \= OldSurface.
 		
+		% Amount of rejected permits in a row.
 		rejectedPermit(Rejected) :- Rejected > 0.
 		
 		% Calculate how much land will be bought from the current budget.
@@ -49,10 +52,10 @@ init module {
 	program {
 				
 		%Initialize itself with an ID.
-		if bel( percept(stakeholderSelf(ID))) then insert(selfStakeholderID(ID)).
+		if bel( percept( stakeholderSelf(ID))) then insert( selfStakeholderID(ID)).
 		
 		%Initialize the other stakeholders.
-		forall bel (percept(stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
+		forall bel (percept( stakeholder(ID, Type, Name))) do insert( stakeholder(ID, Type, Name)).
 		
 		% Initialize the indicators for this stakeholder with its importance.
 		forall bel ( percept( initIndicator(StakeholderID, IndicatorID, Weight)), selfStakeholderID(StakeholderID)) 
@@ -93,24 +96,26 @@ init module {
 main module {
 	program {	
 		
-		%Dynamic main change for the stakeholders
-		if bel(targetReached(false)) then {
+		% Dynamic main change for the stakeholders
+		if bel( targetReached(false)) then {
 			
+			% If you have the goal to buy land, buy land and ask for a permit.
 			if  goal( buyNewLand(Surface, Cost)), 
 				bel( readyForPermit(true))
 			  then buyLand(Surface, Cost) 
 			  + delete( readyForPermit(true)) 
 			  + insert( readyForPermit(false)). 
-				
+			
+			% If you have the goal to buy buildings, buy buildings and ask for a permit.	
 			if  goal( buildGoal(Surface, Type)),
 				bel( readyForPermit( true)) 
 			  then build(Surface, Type) 
 			  + delete( readyForPermit(true))
 			  + insert( readyForPermit(false)).
 			
-			if bel(selfStakeholderID(1)) then HousingMain.
+			if bel( selfStakeholderID(1)) then HousingMain.
 			
-			if bel(selfStakeholderID(2)) then CompanyMain.
+			if bel( selfStakeholderID(2)) then CompanyMain.
 		}
 	}
 }
@@ -118,22 +123,24 @@ main module {
 event module {
 	program {
 		
-		
+		% There are no permits percepted but the agent is still not ready for permit.
 		if bel( percept(permits(0)),
 				readyForPermit(false),
 				oldBudget(OldBudget),
 				budget(CurrentBudget),
 				rejectedConcurrentPermits(Current)) 
 		  then {
-		  		if bel(	percept(availableLand(X))) 
+		  		% The percept available land was percepted, so the permit was accepted
+		  		if bel(	percept( availableLand(X))) 
 		  		  then delete(	readyForPermit(false),
 		  		  				oldBudget(OldBudget),
 								rejectedConcurrentPermits(Current)) 
 				  + insert(		readyForPermit(true), 
 				  				oldBudget(CurrentBudget),
 				  				rejectedConcurrentPermits(0)).
-				  				
-				if bel(	not(percept(availableLand(_))),
+				
+				% The percept available land was not percepted, so the permit was denied.   				
+				if bel(	not(percept( availableLand(_))),
 						rejectedPermits(Amount)) 
 				  then delete(	readyForPermit(false),
 				  				budget(CurrentBudget), 
