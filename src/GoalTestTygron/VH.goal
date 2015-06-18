@@ -100,7 +100,7 @@ main module {
 		if bel( targetReached(false)) then {
 			
 			% If you have the goal to buy land, buy land and ask for a permit.
-			if  goal( buyNewLand(Surface, Cost)), 
+			if  goal( buyLandGoal(Surface, Cost)), 
 				bel( readyForPermit(true))
 			  then buyLand(Surface, Cost) 
 			  + delete( readyForPermit(true)) 
