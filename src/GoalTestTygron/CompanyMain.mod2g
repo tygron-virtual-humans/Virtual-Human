@@ -12,18 +12,20 @@ module CompanyMain{
 				oldAmountOfLand(OutdatedSurface))
 		   then {
 		   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress <100) 
-		   	  then delete(oldAmountOfLand(OutdatedSurface))
-		   	  + insert(oldAmountOfLand(Surface)) 
-		   	  + adopt(buildGoal(Surface,3)).
+		   	  then delete( oldAmountOfLand(OutdatedSurface))
+		   	  	 + insert( oldAmountOfLand(Surface)) 
+		   	  	 + adopt( buildGoal(Surface,3)).
 		   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress==100) 
-		   	  then delete(oldAmountOfLand(OutdatedSurface)) 
-		   	  + insert(oldAmountOfLand(Surface)) 
-		   	  + adopt(buildGoal(Surface, 2)).
+		   	  then delete( oldAmountOfLand(OutdatedSurface)) 
+		   	  	 + insert( oldAmountOfLand(Surface)) 
+		   	 	 + adopt( buildGoal(Surface, 2)).
 		   	if bel(	Rejected > 0, officesParkingRatio(Surface, Offices, Parking)) 
-		   	  then delete(oldAmountOfLand(OutdatedSurface), rejectedConcurrentPermits(Rejected)) 
-		   	  + insert(oldAmountOfLand(Surface), rejectedConcurrentPermits(0)) 
-		   	  + adopt(buildGoal(Parking, 2)) 
-		   	  + adopt(rejectedPermitGoal(Rejected)).
+		   	  then delete(oldAmountOfLand(OutdatedSurface), 
+		   	  			  rejectedConcurrentPermits(Rejected)) 
+		   	  	 + insert(oldAmountOfLand(Surface),
+		   	  	 		  rejectedConcurrentPermits(0)) 
+		   	  	 + adopt(buildGoal(Parking, 2)) 
+		   	 	 + adopt(rejectedPermitGoal(Rejected)).
 		   }   
 		
 		% Adopt the goal for buying new land if there is enough available land and there is no land in your possession.
@@ -42,8 +44,7 @@ module CompanyMain{
 				percentage(OldPercentage), 
 				oldNewPercentage(Rejected, NewPercentage)) 
 		   then delete(percentage(OldPercentage)) 
-		   + insert(percentage(NewPercentage)).
-
-					
+		   	  + insert(percentage(NewPercentage)).
+		
 	}
 }
