@@ -6,10 +6,10 @@ init module {
 	knowledge {
 		
 		% Needed to check if our permit for the land is accepted.
-		buyLandGoal(Surface, Cost) :- availableLand(CurrentSurface), oldAmoundOfLand(OldSurface), CurrentSurface \= OldSurface.
+		buyLandGoal(Surface, Cost) :- readyForPermit(true), availableLand(CurrentSurface), oldAmountOfLand(OldSurface), CurrentSurface \= OldSurface.
 
 		% Needed to check if our permit for the buildings is accepted.
-		buildGoal(Surface, Type) :- availableLand(CurrentSurface), oldAmoundOfLand(OldSurface), CurrentSurface \= OldSurface.
+		buildGoal(Surface, Type) :- readyForPermit(true), availableLand(CurrentSurface), oldAmountOfLand(OldSurface), CurrentSurface \= OldSurface.
 		
 		% Amount of rejected permits in a row.
 		rejectedPermitGoal(Rejected) :- Rejected > 0.
@@ -70,7 +70,7 @@ init module {
 		then insert( budget(Current), oldBudget(Current)).		
 		
 		% Initialize the amount of available land.
-		if bel(percept( availableLand(Surface))) then insert(availableLand(Surface), oldAmoundOfLand(Surface)).
+		if bel(percept( availableLand(Surface))) then insert(availableLand(Surface), oldAmountOfLand(Surface)).
 	}
 		
 	actionspec{
@@ -124,14 +124,15 @@ event module {
 	program {
 		
 		% There are no permits percepted but the agent is still not ready for permit.
-		if bel( percept(permits(0)),
-				readyForPermit(false),
+		if bel( readyForPermit(false),
 				oldBudget(OldBudget),
 				budget(CurrentBudget),
-				rejectedConcurrentPermits(Current)) 
+				rejectedConcurrentPermits(Current),
+				oldAmountOfLand(OldSurface)) 
 		  then {
-		  		% The percept available land was percepted, so the permit was accepted
-		  		if bel(	percept( availableLand(Surface))) 
+		  		% The percepted available land differs from the oldLand believe, the permit was accepted
+		  		if bel( percept(availableLand(Surface)),
+		  				OldSurface \= Surface) 
 		  		  then delete(	readyForPermit(false),
 		  		  				oldBudget(OldBudget),
 								rejectedConcurrentPermits(Current)) 
@@ -139,8 +140,9 @@ event module {
 				  				oldBudget(CurrentBudget),
 				  				rejectedConcurrentPermits(0)).
 				
-				% The percept available land was not percepted, so the permit was denied.   				
-				if bel(	not(percept( availableLand(_))),
+				% The percepted available land equals the oldLand believe, the permit was denied.   				
+				if bel(	percept(availableLand(Surface)), 
+						OldSurface == Surface,
 						rejectedPermits(Amount)) 
 				  then delete(	readyForPermit(false),
 				  				budget(CurrentBudget), 
@@ -152,7 +154,7 @@ event module {
 		
 		if 	goal(buildGoal(_, Type)),
 			bel( readyForPermit(false),
-				 Type = 1 ; Type = 2,
+				 (Type == 1 ; Type == 2),
 				 percept( availableLand(NewSurface)), 
 				 availableLand(OldSurface)) 
 		  then delete(availableLand(OldSurface), readyForPermit(false)) 
