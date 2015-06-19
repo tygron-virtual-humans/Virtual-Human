@@ -162,7 +162,7 @@ event module {
 		
 		% Update the amount of available land.
 		if bel( percept( availableLand(NewSurface)), 
-				availableLand(OldSurface)) 
+				availableLand(OldSurface), NewSurface \= OldSurface) 
 		  then delete(availableLand(OldSurface)) 
 		  + insert(availableLand(NewSurface)).
 		
@@ -177,7 +177,7 @@ event module {
 		
 		% Update indicators on change.
 		forall bel( percept( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)),
-				indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
+				indicator(ID, Type, Name, OldProgress, OldCurrent, Target), NewProgress \= OldProgress) 
 		do delete( indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
 		+  insert( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)).
 		
