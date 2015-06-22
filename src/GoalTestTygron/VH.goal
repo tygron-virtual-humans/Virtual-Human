@@ -193,7 +193,7 @@ event module {
 		
 		% Update budget on change.
 		if 	bel( percept( indicator(_, Type, _, _, NewBudget, _)),
-				 Type == "finance",
+				 Type == 'finance',
 				 oldBudget(OutdatedBudget), 
 				 budget(OldBudget), 
 				 OldBudget\=NewBudget) 
