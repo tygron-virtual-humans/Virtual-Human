@@ -43,8 +43,8 @@ module CompanyMain{
 				Rejected < 5, 
 				percentage(OldPercentage), 
 				oldNewPercentage(Rejected, NewPercentage)) 
-		   then delete(percentage(OldPercentage)) 
-		   	  + insert(percentage(NewPercentage)).
+		   	then delete(percentage(OldPercentage)) 
+		   	   + insert(percentage(NewPercentage)).
 		
 	}
 }
