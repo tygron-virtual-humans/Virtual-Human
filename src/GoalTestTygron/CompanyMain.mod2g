@@ -7,7 +7,7 @@ module CompanyMain{
 		% Build offices and parkingspace depending on the amount of owned land and amount of concurrent rejected permits.
 		if bel( readyForPermit(true),
 				availableLand(Surface),
-				Surface > 0.0,
+				Surface >= 50.0,
 				rejectedConcurrentPermits(Rejected),
 				oldAmountOfLand(OutdatedSurface))
 		   then {
@@ -31,7 +31,7 @@ module CompanyMain{
 		% Adopt the goal for buying new land if there is enough available land and there is no land in your possession.
 		if bel( readyForPermit(true), 
 				availableLand(Surface),
-				Surface == 0.0,
+				Surface < 50.0,
 				percentage(Percentage), 
 				standardPrice(Cost), 
 				calculateNeededLand(Percentage, Land))				
@@ -40,7 +40,7 @@ module CompanyMain{
 		% Calculate the percentage of budget you want to spend. 
 		if bel( rejectedConcurrentPermits(Rejected), 
 				readyForPermit(true), 
-				Rejected < 5, 
+				Rejected < 4
 				percentage(OldPercentage), 
 				oldNewPercentage(Rejected, NewPercentage)) 
 		   	then delete(percentage(OldPercentage)) 
