@@ -87,7 +87,8 @@ init module {
 		
 		% Initialize the amount of available land.
 		if bel( percept( availableLand(Surface))) 
-			then insert( availableLand(Surface)).
+			then insert( availableLand(Surface),
+						 oldavailableLand(Surface)).
 	}
 		
 	actionspec{
@@ -145,63 +146,65 @@ main module {
 
 event module {
 	program {		
+		     		   
+		if bel( percept(availableLand(Surface)),
+				availableLand(OldSurface),
+				oldavailableLand(OlderSurface))
+		  then delete( availableLand(OldSurface),
+		  			   oldavailableLand(OlderSurface))
+		     + insert( availableLand(Surface),
+		     		   oldavailableLand(OldSurface)).
 		
-		% There are no permits percepted but the agent is still not ready for permit.
-		if bel( 		readyForPermit(State),
-						State = 'waitingLand',
-						NewState = 'ready',
-						availableLand(OldSurface),
-						percept(availableLand(Surface)))  
-		  then delete(	readyForPermit(State),
-						availableLand(OldSurface)) 
-		  	 + insert(	readyForPermit(NewState),
-		  				availableLand(Surface)).
-				
-				
 		if bel( percept(permits(Amount)),
-				Amount = 0,
-				permits(Current),
-				Amount \= Current,
+				Amount = 0, 
+				permits(OldAmount),
+				OldAmount \= Amount,
+				readyForPermit(State),
+				State = 'waitingLand',
+				NewState = 'ready')
+		  then delete( permits(OldAmount),
+		  			   readyForPermit(State))
+		     + insert( permits(Amount),
+		     		   readyForPermit(NewState)).  
+		     	
+		if bel( availableLand(Surface),
+				oldavailableLand(OldSurface),
+				percept(permits(Amount)),
+				Amount = 0, 
+				permits(OldAmount),
+				OldAmount \= Amount,
 				readyForPermit(State),
 				State = 'waitingBuilding',
-				NewState = 'permitBuilding')
-		  then delete( readyForPermit(State),
-		  			   permits(Current))
-		  	 + insert( readyForPermit(NewState),
-		  	 		   permits(Amount)).
-		  	 
-		% There are no permits percepted but the agent is still not ready for permit.
-		if bel( readyForPermit(State),
-				State = 'permitBuilding',
 				NewState = 'ready',
-				rejectedConcurrentPermits(Current),
-				availableLand(OldSurface),
-				percept(availableLand(Surface))) 
-		  then {
-		  		% The percepted available land differs from the oldLand believe, the permit was accepted
-				if bel(  		OldSurface \= Surface) 
-		  		  then delete(	readyForPermit(State),
-								rejectedConcurrentPermits(Current),
-								availableLand(OldSurface)) 
-				  	 + insert(	readyForPermit(NewState),
-				  				rejectedConcurrentPermits(0),
-				  				availableLand(Surface)).
-				
-				% The percepted available land equals the oldLand believe, the permit was denied.   				
-				if bel(	OldSurface == Surface,
-						rejectedPermits(Amount)) 
-				  then delete(	readyForPermit(State), 
-				  				rejectedConcurrentPermits(Current)) 
-				  	 + insert(	readyForPermit(NewState),	
-				  				rejectedConcurrentPermits(Amount)).
-				}
+				rejectedConcurrentPermits(Current))
+		  then { if bel( Surface \= OldSurface)
+		  			then delete( oldavailableLand(OldSurface),
+		  						 permits(OldAmount),
+		  						 readyForPermit(State),
+		  						 rejectedConcurrentPermits(Current))
+		     		   + insert( oldavailableLand(Surface),
+		     		   			 permits(Amount),
+		     		   			 readyForPermit(NewState),
+		     		   			 rejectedConcurrentPermits(0)).
+		     		   
+		     	 if bel( Surface == OldSurface,
+		     	 		 rejectedPermits(Permits))
+		  			then delete( oldavailableLand(OldSurface),
+		  						 permits(OldAmount),
+		  						 readyForPermit(State),
+		  						 rejectedConcurrentPermits(Current))
+		     		   + insert( oldavailableLand(Surface),
+		     		   			 permits(Amount),
+		     		   			 readyForPermit(NewState),
+		     		   			 rejectedConcurrentPermits(Permits)).
+		  }				
 		
-		if bel( percept(permits(Amount)),
-				permits(Current),
-				Amount \= Current)
-		  then delete( permits(Current))
-		  	 + insert( permits(Amount)).
-		  	 
+		if bel( percept(permits(Amount)), 
+				permits(OldAmount),
+				OldAmount \= Amount)
+		  then delete( permits(OldAmount))
+		     + insert( permits(Amount)).
+		     
 		% Update budget on change.
 		if 	bel( percept( indicator(IndicatorID, Type, _, _, NewBudget, _)),
 				 Type == 'finance',
