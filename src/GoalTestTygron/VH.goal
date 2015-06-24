@@ -6,16 +6,14 @@ init module {
 	knowledge {
 		
 		% Needed to check if our permit for the land is accepted.
-		buyLandGoal(Surface, Cost) :- readyForPermit(true), 
-									  availableLand(CurrentSurface), 
-									  oldAmountOfLand(OldSurface), 
-									  CurrentSurface \= OldSurface.
+		buyLandGoal(Surface, Cost) :- readyForPermit(State),
+									  State = 'readyLand', 
+									  availableLand(CurrentSurface).
 
 		% Needed to check if our permit for the buildings is accepted.
-		buildGoal(Surface, Type) :- readyForPermit(true), 
-									availableLand(CurrentSurface), 
-									oldAmountOfLand(OldSurface), 
-									CurrentSurface \= OldSurface.
+		buildGoal(Surface, Type) :- readyForPermit(State), 
+									State = 'readyBuilding',
+									availableLand(CurrentSurface).
 		
 		% Amount of rejected permits in a row.
 		rejectedPermitGoal(Rejected) :- Rejected > 0.
@@ -49,7 +47,7 @@ init module {
 		standardPrice(400).
 		
 		% Current permit state (whether he is waiting for a permit to be accepted or not).
-		readyForPermit(true).
+		readyForPermit('ready').
 		
 		% Percetage of budget to use when buying land.
 		percentage(50).
@@ -57,7 +55,8 @@ init module {
 		% Number of rejected permits in a row.
 		rejectedConcurrentPermits(0).	
 
-		
+		% Amount of open permits.
+		permits(0).
 	}
 	
 	program {
@@ -84,13 +83,11 @@ init module {
 		if bel(	percept( indicator(IndicatorID, Type, _, _, Current, _)), 
 				Type == 'finance', 
 				initIndicator(_, IndicatorID, _)) 
-			then insert( budget(Current), 
-						 oldBudget(Current)).		
+			then insert( budget(Current)).		
 		
 		% Initialize the amount of available land.
 		if bel( percept( availableLand(Surface))) 
-			then insert( availableLand(Surface), 
-					  	 oldAmountOfLand(Surface)).
+			then insert( availableLand(Surface)).
 	}
 		
 	actionspec{
@@ -121,17 +118,21 @@ main module {
 			
 			% If you have the goal to buy land, buy land and ask for a permit.
 			if  goal( 		  buyLandGoal(Surface, Cost)), 
-				bel( 		  readyForPermit(true))
+				bel( 		  readyForPermit(State),
+							  State = 'requestingLand',
+							  NewState = 'waitingLand')
 			  then 			  buyLand(Surface, Cost) 
-			 		+ delete( readyForPermit(true)) 
-			  		+ insert( readyForPermit(false)). 
+			 		+ delete( readyForPermit(State)) 
+			  		+ insert( readyForPermit(NewState)). 
 			
 			% If you have the goal to buy buildings, buy buildings and ask for a permit.	
 			if  goal( 		  buildGoal(Surface, Type)),
-				bel( 		  readyForPermit( true)) 
+				bel( 		  readyForPermit( State),
+							  State = 'requestingBuilding',
+							  NewState = 'waitingBuilding') 
 			  then 			  build(Surface, Type) 
-			  		+ delete( readyForPermit(true))
-			  		+ insert( readyForPermit(false)).
+			  		+ delete( readyForPermit(State))
+			  		+ insert( readyForPermit(NewState)).
 			
 			% If the stakeholder ID is 1, go to the housing corporation module.
 			if bel( selfStakeholderID(1)) then HousingMain.
@@ -145,63 +146,65 @@ main module {
 event module {
 	program {
 		
+		if bel( percept(permits(Amount)),
+				permits(Current))
+		  then delete( permits(Current))
+		  	 + insert( permits(Amount)).
+		
+		
 		% There are no permits percepted but the agent is still not ready for permit.
-		if bel( readyForPermit(false),
-				oldBudget(OldBudget),
-				budget(CurrentBudget),
+		if bel( readyForPermit(State),
+				State = 'waitingLand',
+				NewState = 'readyLand',
 				rejectedConcurrentPermits(Current),
-				oldAmountOfLand(OldSurface)) 
+				availableLand(OldSurface)) 
 		  then {
 		  		% The percepted available land differs from the oldLand believe, the permit was accepted
 				if bel( percept(availableLand(Surface)),
 				  		OldSurface \= Surface) 
-		  		  then delete(	readyForPermit(false),
-		  		  				oldBudget(OldBudget),
-								rejectedConcurrentPermits(Current)) 
-				  	 + insert(	readyForPermit(true), 
-				  				oldBudget(CurrentBudget),
-				  				rejectedConcurrentPermits(0)).
+		  		  then delete(	readyForPermit(State),
+								rejectedConcurrentPermits(Current),
+								availableLand(OldSurface)) 
+				  	 + insert(	readyForPermit(NewState),
+				  				rejectedConcurrentPermits(0),
+				  				availableLand(Surface)).
 				
 				% The percepted available land equals the oldLand believe, the permit was denied.   				
 				if bel(	percept(availableLand(Surface)), 
 						OldSurface == Surface,
 						rejectedPermits(Amount)) 
-				  then delete(	readyForPermit(false),
-				  				budget(CurrentBudget), 
+				  then delete(	readyForPermit(State), 
 				  				rejectedConcurrentPermits(Current)) 
-				  	 + insert(	readyForPermit(true),
-				  				budget(OldBudget), 	
+				  	 + insert(	readyForPermit(NewState),	
 				  				rejectedConcurrentPermits(Amount)).
 				}
 		
-		if goal( buildGoal(_, Type)),
-			bel( readyForPermit(false),
-				(Type == 1 ; Type == 2),
-				percept( availableLand(NewSurface)), 
-				availableLand(OldSurface)) 
-		  then delete( availableLand(OldSurface), 
-		  			   readyForPermit(false)) 
-		  	 + insert( availableLand(NewSurface), 
-		  			   readyForPermit(true)).		
-		
-		% Update the amount of available land.
-		if bel(	percept( availableLand(NewSurface)), 
-				availableLand(OldSurface), 
-				NewSurface \= OldSurface) 
-		  then delete( availableLand(OldSurface)) 
-		 	 + insert( availableLand(NewSurface)).
+%		if goal( buildGoal(_, Type)),
+%			bel( readyForPermit(State),
+%				 State = 'requesting',
+%				 (Type == 1 ; Type == 2),
+%				 percept( availableLand(NewSurface)), 
+%				 availableLand(OldSurface)) 
+%		  then delete( availableLand(OldSurface), 
+%		  			   readyForPermit(false)) 
+%		  	 + insert( availableLand(NewSurface), 
+%		  			   readyForPermit(true)).		
+%		
+%		% Update the amount of available land.
+%		if bel(	percept( availableLand(NewSurface)), 
+%				availableLand(OldSurface), 
+%				NewSurface \= OldSurface) 
+%		  then delete( availableLand(OldSurface)) 
+%		 	 + insert( availableLand(NewSurface)).
 		
 		% Update budget on change.
 		if 	bel( percept( indicator(IndicatorID, Type, _, _, NewBudget, _)),
 				 Type == 'finance',
-				 initIndicator(_, IndicatorID, _),
-				 oldBudget(OutdatedBudget), 
+				 initIndicator(_, IndicatorID, _), 
 				 budget(OldBudget), 
 				 OldBudget\=NewBudget) 
-		  then delete( budget(OldBudget), 
-		  			   oldBudget(OutdatedBudget)) 
-		 	 + insert( budget(NewBudget), 
-		  			   oldBudget(OldBudget)).
+		  then delete( budget(OldBudget)) 
+		 	 + insert( budget(NewBudget)).
 		
 		% Update indicators on change.
 		forall bel( percept( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)),

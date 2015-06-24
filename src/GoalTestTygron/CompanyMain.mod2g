@@ -8,22 +8,15 @@ module CompanyMain{
 		if bel( readyForPermit(true),
 				availableLand(Surface),
 				Surface >= 50.0,
-				rejectedConcurrentPermits(Rejected),
-				oldAmountOfLand(OutdatedSurface))
+				rejectedConcurrentPermits(Rejected))
 		   then {
 		   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress <100) 
-		   	  then delete( oldAmountOfLand(OutdatedSurface))
-		   	  	 + insert( oldAmountOfLand(Surface)) 
-		   	  	 + adopt( buildGoal(Surface,3)).
+		   	  then adopt( buildGoal(Surface,3)).
 		   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress==100) 
-		   	  then delete( oldAmountOfLand(OutdatedSurface)) 
-		   	  	 + insert( oldAmountOfLand(Surface)) 
-		   	 	 + adopt( buildGoal(Surface, 2)).
+		   	  then adopt( buildGoal(Surface, 2)).
 		   	if bel(	Rejected > 0, officesParkingRatio(Surface, Offices, Parking)) 
-		   	  then delete(oldAmountOfLand(OutdatedSurface), 
-		   	  			  rejectedConcurrentPermits(Rejected)) 
-		   	  	 + insert(oldAmountOfLand(Surface),
-		   	  	 		  rejectedConcurrentPermits(0)) 
+		   	  then delete(rejectedConcurrentPermits(Rejected)) 
+		   	  	 + insert(rejectedConcurrentPermits(0)) 
 		   	  	 + adopt(buildGoal(Parking, 2)) 
 		   	 	 + adopt(rejectedPermitGoal(Rejected)).
 		   }   
@@ -34,11 +27,8 @@ module CompanyMain{
 				Surface < 50.0,
 				percentage(Percentage), 
 				standardPrice(Cost), 
-				calculateNeededLand(Percentage, Land),
-				oldAmountOfLand(OudatedSurface))				
-			then delete(oldAmountOfLand(OudatedSurface))
-			   + insert(oldAmountOfLand(Surface))
-			   + adopt( buyLandGoal(Land, Cost)).
+				calculateNeededLand(Percentage, Land))				
+			then adopt( buyLandGoal(Land, Cost)).
 				
 		% Calculate the percentage of budget you want to spend. 
 		if bel( rejectedConcurrentPermits(Rejected), 
