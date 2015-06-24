@@ -40,7 +40,7 @@ module CompanyMain{
 		% Calculate the percentage of budget you want to spend. 
 		if bel( rejectedConcurrentPermits(Rejected), 
 				readyForPermit(true), 
-				Rejected < 4
+				Rejected < 4,
 				percentage(OldPercentage), 
 				oldNewPercentage(Rejected, NewPercentage)) 
 		   	then delete(percentage(OldPercentage)) 
