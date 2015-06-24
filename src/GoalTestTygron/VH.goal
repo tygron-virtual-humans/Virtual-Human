@@ -144,24 +144,42 @@ main module {
 }
 
 event module {
-	program {
-		
-		if bel( percept(permits(Amount)),
-				permits(Current))
-		  then delete( permits(Current))
-		  	 + insert( permits(Amount)).
-		
+	program {		
 		
 		% There are no permits percepted but the agent is still not ready for permit.
+		if bel( 		readyForPermit(State),
+						State = 'waitingLand',
+						NewState = 'ready',
+						availableLand(OldSurface),
+						percept(availableLand(Surface)))  
+		  then delete(	readyForPermit(State),
+						availableLand(OldSurface)) 
+		  	 + insert(	readyForPermit(NewState),
+		  				availableLand(Surface)).
+				
+				
+		if bel( percept(permits(Amount)),
+				Amount = 0,
+				permits(Current),
+				Amount \= Current,
+				readyForPermit(State),
+				State = 'waitingBuilding',
+				NewState = 'permitBuilding')
+		  then delete( readyForPermit(State),
+		  			   permits(Current))
+		  	 + insert( readyForPermit(NewState),
+		  	 		   permits(Amount)).
+		  	 
+		% There are no permits percepted but the agent is still not ready for permit.
 		if bel( readyForPermit(State),
-				State = 'waitingLand',
-				NewState = 'readyLand',
+				State = 'permitBuilding',
+				NewState = 'ready',
 				rejectedConcurrentPermits(Current),
-				availableLand(OldSurface)) 
+				availableLand(OldSurface),
+				percept(availableLand(Surface))) 
 		  then {
 		  		% The percepted available land differs from the oldLand believe, the permit was accepted
-				if bel( percept(availableLand(Surface)),
-				  		OldSurface \= Surface) 
+				if bel(  		OldSurface \= Surface) 
 		  		  then delete(	readyForPermit(State),
 								rejectedConcurrentPermits(Current),
 								availableLand(OldSurface)) 
@@ -170,8 +188,7 @@ event module {
 				  				availableLand(Surface)).
 				
 				% The percepted available land equals the oldLand believe, the permit was denied.   				
-				if bel(	percept(availableLand(Surface)), 
-						OldSurface == Surface,
+				if bel(	OldSurface == Surface,
 						rejectedPermits(Amount)) 
 				  then delete(	readyForPermit(State), 
 				  				rejectedConcurrentPermits(Current)) 
@@ -179,24 +196,12 @@ event module {
 				  				rejectedConcurrentPermits(Amount)).
 				}
 		
-%		if goal( buildGoal(_, Type)),
-%			bel( readyForPermit(State),
-%				 State = 'requesting',
-%				 (Type == 1 ; Type == 2),
-%				 percept( availableLand(NewSurface)), 
-%				 availableLand(OldSurface)) 
-%		  then delete( availableLand(OldSurface), 
-%		  			   readyForPermit(false)) 
-%		  	 + insert( availableLand(NewSurface), 
-%		  			   readyForPermit(true)).		
-%		
-%		% Update the amount of available land.
-%		if bel(	percept( availableLand(NewSurface)), 
-%				availableLand(OldSurface), 
-%				NewSurface \= OldSurface) 
-%		  then delete( availableLand(OldSurface)) 
-%		 	 + insert( availableLand(NewSurface)).
-		
+		if bel( percept(permits(Amount)),
+				permits(Current),
+				Amount \= Current)
+		  then delete( permits(Current))
+		  	 + insert( permits(Amount)).
+		  	 
 		% Update budget on change.
 		if 	bel( percept( indicator(IndicatorID, Type, _, _, NewBudget, _)),
 				 Type == 'finance',

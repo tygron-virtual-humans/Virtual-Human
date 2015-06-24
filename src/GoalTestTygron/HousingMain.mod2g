@@ -4,7 +4,7 @@ module HousingMain{
 		   
 		% Build houses and parks depending on the amount of owned land and amount of concurrent rejected permits.
 		if bel(	readyForPermit(State),
-				State = 'readyBuilding',
+				State = 'ready',
 				NewState = 'requestingBuilding',
 				availableLand(Surface),
 				Surface >= 50.0,
@@ -29,7 +29,7 @@ module HousingMain{
 		   
 		% Adopt the goal for buying new land if there is land in your possession.
 		if bel( readyForPermit(State),
-				State = 'readyLand',
+				State = 'ready',
 				NewState = 'requestingLand', 
 				availableLand(Surface),
 				Surface < 50.0,
