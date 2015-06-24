@@ -34,8 +34,11 @@ module CompanyMain{
 				Surface < 50.0,
 				percentage(Percentage), 
 				standardPrice(Cost), 
-				calculateNeededLand(Percentage, Land))				
-			then adopt( buyLandGoal(Land, Cost)).
+				calculateNeededLand(Percentage, Land),
+				oldAmountOfLand(OudatedSurface))				
+			then delete(oldAmountOfLand(OudatedSurface))
+			   + insert(oldAmountOfLand(Surface))
+			   + adopt( buyLandGoal(Land, Cost)).
 				
 		% Calculate the percentage of budget you want to spend. 
 		if bel( rejectedConcurrentPermits(Rejected), 

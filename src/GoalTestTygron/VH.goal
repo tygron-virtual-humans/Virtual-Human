@@ -120,16 +120,16 @@ main module {
 		if bel( targetReached(false)) then {
 			
 			% If you have the goal to buy land, buy land and ask for a permit.
-			if  goal( buyLandGoal(Surface, Cost)), 
-				bel( readyForPermit(true))
-			  then buyLand(Surface, Cost) 
+			if  goal( 		  buyLandGoal(Surface, Cost)), 
+				bel( 		  readyForPermit(true))
+			  then 			  buyLand(Surface, Cost) 
 			 		+ delete( readyForPermit(true)) 
 			  		+ insert( readyForPermit(false)). 
 			
 			% If you have the goal to buy buildings, buy buildings and ask for a permit.	
-			if  goal( buildGoal(Surface, Type)),
-				bel( readyForPermit( true)) 
-			  then build(Surface, Type) 
+			if  goal( 		  buildGoal(Surface, Type)),
+				bel( 		  readyForPermit( true)) 
+			  then 			  build(Surface, Type) 
 			  		+ delete( readyForPermit(true))
 			  		+ insert( readyForPermit(false)).
 			
@@ -192,8 +192,9 @@ event module {
 		 	 + insert( availableLand(NewSurface)).
 		
 		% Update budget on change.
-		if 	bel( percept( indicator(_, Type, _, _, NewBudget, _)),
+		if 	bel( percept( indicator(IndicatorID, Type, _, _, NewBudget, _)),
 				 Type == 'finance',
+				 initIndicator(_, IndicatorID, _),
 				 oldBudget(OutdatedBudget), 
 				 budget(OldBudget), 
 				 OldBudget\=NewBudget) 
@@ -205,7 +206,7 @@ event module {
 		% Update indicators on change.
 		forall bel( percept( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)),
 					indicator(ID, Type, Name, OldProgress, OldCurrent, Target), 
-					NewProgress \= OldProgress) 
+					NewCurrent \= OldCurrent)
 			do delete(  indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
 			+  insert(  indicator(ID, Type, Name, NewProgress, NewCurrent, Target)).
 		
