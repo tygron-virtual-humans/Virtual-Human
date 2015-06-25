@@ -35,7 +35,11 @@ init module {
 		officesParkingRatio(Surface, Offices, Parking) :- Offices is (Surface * 0.75), 
 														  Parking is (Surface * 0.25).
 														  
-		inctimer(X, Y) :- Y is X+1.												  
+		inctimer(X, Y) :- Y is X+1.		
+		
+		% Compute new standardPrice with emotion.
+		emotionPrice(Joy, StandardPrice) :- Joy >= 0,
+											 StandardPrice is 400 + 50 * (Joy / 5).										  
 	}
 	
 	beliefs {
@@ -61,6 +65,8 @@ init module {
 		permits(0).
 		
 		timer(0).
+		
+		emo(joy, 0).
 	}
 	
 	program {
@@ -157,6 +163,11 @@ main module {
 			  		+ delete( readyForPermit(State))
 			  		+ insert( readyForPermit(NewState)).
 			
+			% If you receive a joy percept, change standard price.
+			if bel(standardPrice(Price), percept(emo(joy, Number)), emotionPrice(Number, NewPrice))
+			then delete( standardPrice(Price)) + insert(standardPrice(NewPrice)).
+			
+			
 			% If the stakeholder ID is 1, go to the housing corporation module.
 			if bel( selfStakeholderID(1)) then {
 		% Build houses and parks depending on the amount of owned land and amount of concurrent rejected permits.
@@ -244,6 +255,9 @@ main module {
 
 event module {
 	program {		
+		 	 	
+		if bel( percept(emo(joy, Number)), emo(joy, OldNumber))
+		then delete(emo(joy, OldNumber)) + insert(emo(joy, Number)).	 	
 		 	 		   		   
 		if bel( percept(availableLand(Surface)),
 				availableLand(OldSurface))
