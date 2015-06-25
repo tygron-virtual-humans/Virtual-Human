@@ -1,6 +1,3 @@
-#import "HousingMain.mod2g".
-#import "CompanyMain.mod2g".
-
 
 init module {
 	knowledge {
@@ -56,6 +53,9 @@ init module {
 		
 		% Number of rejected permits in a row.
 		rejectedConcurrentPermits(0).	
+		
+		% The agent feels no joy yet.
+		joy(0).
 
 		
 	}
@@ -134,10 +134,96 @@ main module {
 			  		+ insert( readyForPermit(false)).
 			
 			% If the stakeholder ID is 1, go to the housing corporation module.
-			if bel( selfStakeholderID(1)) then HousingMain.
+			if bel( selfStakeholderID(1)) then {
+				% Build houses and parks depending on the amount of owned land and amount of concurrent rejected permits.
+		if bel(	readyForPermit(true),
+				availableLand(Surface),
+				Surface >= 50.0,
+				rejectedConcurrentPermits(Rejected),
+				oldAmountOfLand(OutdatedSurface))
+	  		then{
+			   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress <100) 
+			   	  then delete(oldAmountOfLand(OutdatedSurface))
+			   	  	 + insert(oldAmountOfLand(Surface)) 
+			   	  	 + adopt(buildGoal(Surface, 0)).
+			   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress==100) 
+			   	  then delete( oldAmountOfLand(OutdatedSurface)) 
+			   	  	 + insert(oldAmountOfLand(Surface)) 
+			   	  	 + adopt(buildGoal(Surface, 1)).
+			   	if bel(	Rejected > 0, houseParkRatio(Surface, Houses, Parks)) 
+			   	  then delete(oldAmountOfLand(OutdatedSurface), rejectedConcurrentPermits(Rejected)) 
+			   	  	 + insert(oldAmountOfLand(Surface), rejectedConcurrentPermits(0)) 
+			   	  	 + adopt(buildGoal(Parks, 1)) 
+			   	  	 + adopt(rejectedPermitGoal(Rejected)).
+		   		}
+		   
+		% Adopt the goal for buying new land if there is land in your possession.
+		if bel( readyForPermit(true), 
+				availableLand(Surface),
+				Surface < 50.0,
+				percentage(Percentage), 
+				standardPrice(Cost), 
+				calculateNeededLand(Percentage, Land),
+				oldAmountOfLand(OudatedSurface))				
+			then delete(oldAmountOfLand(OudatedSurface))
+			   + insert(oldAmountOfLand(Surface))
+			   + adopt( buyLandGoal(Land, Cost)).
+
+		% Calculate the percentage of budget you want to spend. 
+		if bel( rejectedConcurrentPermits(Rejected), 
+				readyForPermit(true), 
+				Rejected < 4, 
+				percentage(OldPercentage), 
+				oldNewPercentage(Rejected, NewPercentage)) 
+			then delete(percentage(OldPercentage)) 
+		   	   + insert(percentage(NewPercentage)).
 			
-			% If the stakeholder ID is 1, go to the housing corporation module.
-			if bel( selfStakeholderID(2)) then CompanyMain.
+	}
+			
+			if bel( selfStakeholderID(2)) then {
+				% Build offices and parkingspace depending on the amount of owned land and amount of concurrent rejected permits.
+		if bel( readyForPermit(true),
+				availableLand(Surface),
+				Surface >= 50.0,
+				rejectedConcurrentPermits(Rejected),
+				oldAmountOfLand(OutdatedSurface))
+		   then {
+		   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress <100) 
+		   	  then delete( oldAmountOfLand(OutdatedSurface))
+		   	  	 + insert( oldAmountOfLand(Surface)) 
+		   	  	 + adopt( buildGoal(Surface,3)).
+		   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress==100) 
+		   	  then delete( oldAmountOfLand(OutdatedSurface)) 
+		   	  	 + insert( oldAmountOfLand(Surface)) 
+		   	 	 + adopt( buildGoal(Surface, 2)).
+		   	if bel(	Rejected > 0, officesParkingRatio(Surface, Offices, Parking)) 
+		   	  then delete(oldAmountOfLand(OutdatedSurface), 
+		   	  			  rejectedConcurrentPermits(Rejected)) 
+		   	  	 + insert(oldAmountOfLand(Surface),
+		   	  	 		  rejectedConcurrentPermits(0)) 
+		   	  	 + adopt(buildGoal(Parking, 2)) 
+		   	 	 + adopt(rejectedPermitGoal(Rejected)).
+		   }   
+		
+		% Adopt the goal for buying new land if there is enough available land and there is no land in your possession.
+		if bel( readyForPermit(true), 
+				availableLand(Surface),
+				Surface < 50.0,
+				percentage(Percentage), 
+				standardPrice(Cost), 
+				calculateNeededLand(Percentage, Land))				
+			then adopt( buyLandGoal(Land, Cost)).
+				
+		% Calculate the percentage of budget you want to spend. 
+		if bel( rejectedConcurrentPermits(Rejected), 
+				readyForPermit(true), 
+				Rejected < 4,
+				percentage(OldPercentage), 
+				oldNewPercentage(Rejected, NewPercentage)) 
+		   	then delete(percentage(OldPercentage)) 
+		   	   + insert(percentage(NewPercentage)).
+		
+			}
 		}
 	}
 }
