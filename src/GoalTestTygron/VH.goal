@@ -37,6 +37,8 @@ init module {
 		% Calculate the division of buildings for company.
 		officesParkingRatio(Surface, Offices, Parking) :- Offices is (Surface * 0.75), 
 														  Parking is (Surface * 0.25).
+														  
+		inctimer(X, Y) :- Y is X+1.												  
 	}
 	
 	beliefs {
@@ -57,6 +59,8 @@ init module {
 
 		% Amount of open permits.
 		permits(0).
+		
+		timer(0).
 	}
 	
 	program {
@@ -83,12 +87,12 @@ init module {
 		if bel(	percept( indicator(IndicatorID, Type, _, _, Current, _)), 
 				Type == 'finance', 
 				initIndicator(_, IndicatorID, _)) 
-			then insert( budget(Current)).		
+			then insert( budget(Current),
+						 oldbudget(Current)).		
 		
 		% Initialize the amount of available land.
 		if bel( percept( availableLand(Surface))) 
-			then insert( availableLand(Surface),
-						 oldavailableLand(Surface)).
+			then insert( availableLand(Surface)).
 	}
 		
 	actionspec{
@@ -113,7 +117,13 @@ init module {
 
 main module {
 	program {	
-		
+		if bel( timer(X),
+				inctimer(X, Y),
+				readyForPermit(State),
+				State = 'permitBuilding')
+		  then delete( timer(X))
+		     + insert(timer(Y)).
+		     
 		% Dynamic main change for the stakeholders
 		if bel( targetReached(false)) then {
 			
@@ -126,6 +136,17 @@ main module {
 			 		+ delete( readyForPermit(State)) 
 			  		+ insert( readyForPermit(NewState)). 
 			
+			% If you have the goal to buy buildings, buy buildings and ask for a permit.	
+			if  goal( 		  buildGoal(Surface, Type)),
+				bel( 		  readyForPermit(State),
+							  (Type = 1; Type = 2),
+							  State = 'requestingBuilding',
+							  NewState = 'ready') 
+			  then 			  build(Surface, Type) 
+			  		+ delete( readyForPermit(State))
+			  		+ insert( readyForPermit(NewState))
+			  		+ drop( buildGoal(Surface, Type)).
+			  		
 			% If you have the goal to buy buildings, buy buildings and ask for a permit.	
 			if  goal( 		  buildGoal(Surface, Type)),
 				bel( 		  readyForPermit( State),
@@ -146,14 +167,11 @@ main module {
 
 event module {
 	program {		
-		     		   
+		 	 		   		   
 		if bel( percept(availableLand(Surface)),
-				availableLand(OldSurface),
-				oldavailableLand(OlderSurface))
-		  then delete( availableLand(OldSurface),
-		  			   oldavailableLand(OlderSurface))
-		     + insert( availableLand(Surface),
-		     		   oldavailableLand(OldSurface)).
+				availableLand(OldSurface))
+		  then delete( availableLand(OldSurface))
+		     + insert( availableLand(Surface)).
 		
 		if bel( percept(permits(Amount)),
 				Amount = 0, 
@@ -166,37 +184,69 @@ event module {
 		  			   readyForPermit(State))
 		     + insert( permits(Amount),
 		     		   readyForPermit(NewState)).  
-		     	
-		if bel( availableLand(Surface),
-				oldavailableLand(OldSurface),
-				percept(permits(Amount)),
+		    
+		if bel( percept(permits(Amount)),
 				Amount = 0, 
 				permits(OldAmount),
 				OldAmount \= Amount,
 				readyForPermit(State),
 				State = 'waitingBuilding',
+				NewState = 'permitBuilding')
+		  then delete( permits(OldAmount),
+		  			   readyForPermit(State))
+		     + insert( permits(Amount),
+		     		   readyForPermit(NewState)).
+		    
+		% Update budget on change.
+		if 	bel( percept( indicator(IndicatorID, Type, _, _, NewBudget, _)),
+				 Type == 'finance',
+				 initIndicator(_, IndicatorID, _), 
+				 budget(OldBudget),
+				 oldbudget(OlderBudget), 
+				 OldBudget>NewBudget) 
+		  then delete( budget(OldBudget)) 
+		 	 + insert( budget(NewBudget)).   
+		 	 
+		% Update budget on change.
+		if 	bel( percept( indicator(IndicatorID, Type, _, _, NewBudget, _)),
+				 Type == 'finance',
+				 initIndicator(_, IndicatorID, _), 
+				 budget(OldBudget),
+				 oldbudget(OlderBudget), 
+				 OldBudget<NewBudget) 
+		  then delete( budget(OldBudget),
+		  			   oldbudget(OlderBudget)) 
+		 	 + insert( budget(NewBudget),
+		 	 		   oldbudget(OldBudget)).  
+		     		    	
+		if bel( budget(Budget),
+				oldbudget(OldBudget),
+				timer(X),
+				X>20,
+				readyForPermit(State),
+				State = 'permitBuilding',
 				NewState = 'ready',
 				rejectedConcurrentPermits(Current))
-		  then { if bel( Surface \= OldSurface)
-		  			then delete( oldavailableLand(OldSurface),
-		  						 permits(OldAmount),
+		  then { if bel( Budget \= OldBudget)
+		  			then delete( oldbudget(OldBudget),
 		  						 readyForPermit(State),
-		  						 rejectedConcurrentPermits(Current))
-		     		   + insert( oldavailableLand(Surface),
-		     		   			 permits(Amount),
+		  						 rejectedConcurrentPermits(Current),
+		  						 timer(X))
+		     		   + insert( oldbudget(Budget),
 		     		   			 readyForPermit(NewState),
-		     		   			 rejectedConcurrentPermits(0)).
+		     		   			 rejectedConcurrentPermits(0),
+		     		   			 timer(0)).
 		     		   
-		     	 if bel( Surface == OldSurface,
+		     	 if bel( Budget == OldBudget,
 		     	 		 rejectedPermits(Permits))
-		  			then delete( oldavailableLand(OldSurface),
-		  						 permits(OldAmount),
+		  			then delete( odlbudget(OldBudget),
 		  						 readyForPermit(State),
-		  						 rejectedConcurrentPermits(Current))
-		     		   + insert( oldavailableLand(Surface),
-		     		   			 permits(Amount),
+		  						 rejectedConcurrentPermits(Current),
+		  						 timer(X))
+		     		   + insert( oldbudget(Budget),
 		     		   			 readyForPermit(NewState),
-		     		   			 rejectedConcurrentPermits(Permits)).
+		     		   			 rejectedConcurrentPermits(Permits),
+		     		   			 timer(0)).
 		  }				
 		
 		if bel( percept(permits(Amount)), 
@@ -204,15 +254,6 @@ event module {
 				OldAmount \= Amount)
 		  then delete( permits(OldAmount))
 		     + insert( permits(Amount)).
-		     
-		% Update budget on change.
-		if 	bel( percept( indicator(IndicatorID, Type, _, _, NewBudget, _)),
-				 Type == 'finance',
-				 initIndicator(_, IndicatorID, _), 
-				 budget(OldBudget), 
-				 OldBudget\=NewBudget) 
-		  then delete( budget(OldBudget)) 
-		 	 + insert( budget(NewBudget)).
 		
 		% Update indicators on change.
 		forall bel( percept( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)),
