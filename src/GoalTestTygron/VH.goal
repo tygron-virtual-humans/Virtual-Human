@@ -1,4 +1,3 @@
-
 init module {
 	knowledge {
 		
@@ -64,8 +63,10 @@ init module {
 		% Amount of open permits.
 		permits(0).
 		
+		% A timer.
 		timer(0).
 		
+		% The value of the emotion joy.
 		emo(joy, 0).
 	}
 	
@@ -123,131 +124,162 @@ init module {
 
 main module {
 	program {	
+		
+		% Increments the timer if the state is waiting for a permit or ready.
 		if bel( timer(X),
 				inctimer(X, Y),
 				readyForPermit(State),
 				(State = 'permitBuilding'; State = 'ready'),
-				X<21)
+				X < 31)
 		  then delete( timer(X))
-		     + insert(timer(Y)).
+		     + insert( timer(Y)).
+		    
 		     
-		% Dynamic main change for the stakeholders
+		% Only calls this main if the targets have not been reached.
 		if bel( targetReached(false)) then {
 			
 			% If you have the goal to buy land, buy land and ask for a permit.
-			if  goal( 		  buyLandGoal(Surface, Cost)), 
-				bel( 		  readyForPermit(State),
-							  State = 'requestingLand',
-							  NewState = 'waitingLand')
-			  then 			  buyLand(Surface, Cost) 
-			 		+ delete( readyForPermit(State)) 
-			  		+ insert( readyForPermit(NewState)). 
+			if goal( buyLandGoal(Surface, Cost)), 
+				bel( readyForPermit(State),
+					 State = 'requestingLand',
+					 NewState = 'waitingLand')
+			  then buyLand(Surface, Cost) 
+			 	 + delete( readyForPermit(State)) 
+			  	 + insert( readyForPermit(NewState)). 
 			
-			% If you have the goal to buy buildings, buy buildings and ask for a permit.	
-			if  goal( 		  buildGoal(Surface, Type)),
-				bel( 		  readyForPermit(State),
-							  (Type = 1; Type = 2),
-							  State = 'requestingBuilding',
-							  NewState = 'ready') 
-			  then 			  build(Surface, Type) 
-			  		+ delete( readyForPermit(State))
-			  		+ insert( readyForPermit(NewState))
-			  		+ drop( buildGoal(Surface, Type)).
+			% If you have the goal to build buildings, build them and ask for a permit.	
+			if goal( buildGoal(Surface, Type)),
+				bel( readyForPermit(State),
+				  	 (Type = 1; Type = 2),
+					 State = 'requestingBuilding',
+					 NewState = 'ready') 
+			  then build(Surface, Type) 
+			  	 + delete( readyForPermit(State))
+			  	 + insert( readyForPermit(NewState))
+			  	 + drop( buildGoal(Surface, Type)).
 			  		
 			% If you have the goal to buy buildings, buy buildings and ask for a permit.	
-			if  goal( 		  buildGoal(Surface, Type)),
-				bel( 		  readyForPermit( State),
-							  State = 'requestingBuilding',
-							  NewState = 'waitingBuilding') 
-			  then 			  build(Surface, Type) 
-			  		+ delete( readyForPermit(State))
-			  		+ insert( readyForPermit(NewState)).
+			if goal( buildGoal(Surface, Type)),
+				bel( readyForPermit( State),
+					 State = 'requestingBuilding',
+					 NewState = 'waitingBuilding') 
+			  then build(Surface, Type) 
+			  	 + delete( readyForPermit(State))
+			  	 + insert( readyForPermit(NewState)).
 			
 			% If you receive a joy percept, change standard price.
-			if bel(standardPrice(Price), percept(emo(joy, Number)), emotionPrice(Number, NewPrice))
-			then delete( standardPrice(Price)) + insert(standardPrice(NewPrice)).
+			if bel( standardPrice(Price), 
+					percept( emo(joy, Number)), 
+					emotionPrice(Number, NewPrice))
+			  then delete( standardPrice(Price)) 
+			     + insert( standardPrice(NewPrice)).
 			
 			
-			% If the stakeholder ID is 1, go to the housing corporation module.
+			% If the stakeholder ID is 1, the housing corporation, go to the housing main module.
 			if bel( selfStakeholderID(1)) then {
-		% Build houses and parks depending on the amount of owned land and amount of concurrent rejected permits.
-		if bel(	readyForPermit(State),
-				State = 'ready',
-				NewState = 'requestingBuilding',
-				availableLand(Surface),
-				Surface >= 50.0,
-				rejectedConcurrentPermits(Rejected))
-	  		then {
-			   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress <100) 
-			   	  then delete(readyForPermit(State))
-			   		 + insert(readyForPermit(NewState))
-			   	  	 + adopt(buildGoal(Surface, 0)).
-			   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress==100) 
-			   	  then delete(readyForPermit(State))
-			   		 + insert(readyForPermit(NewState))
-			   		 + adopt(buildGoal(Surface, 1)).
-			   	if bel(	Rejected > 0, houseParkRatio(Surface, Houses, Parks)) 
-			   	  then delete(readyForPermit(State), 
-			   	  			  rejectedConcurrentPermits(Rejected)) 
-			   	  	 + insert(readyForPermit(NewState),
-			   	  	 		  rejectedConcurrentPermits(0)) 
-			   	  	 + adopt(buildGoal(Parks, 1)) 
-			   	  	 + adopt(rejectedPermitGoal(Rejected)).
+		
+				% Build houses or parks if land is owned.
+				% The amount of parks and houses depend on the amount of rejected permits.
+				if bel(	readyForPermit(State),
+						State = 'ready',
+						NewState = 'requestingBuilding',
+						availableLand(Surface),
+						Surface >= 50.0,
+						rejectedConcurrentPermits(Rejected))
+	  			  then {
+	  			  	
+	  			  	% If no permit is rejected yet and target not reached, build land full with buildings.
+			   		if bel( Rejected == 0, 
+			   				indicator(_, 'housing', _, Progress, _,_), 
+			   				Progress <100) 
+			   	 	  then delete(readyForPermit(State))
+			   		   	 + insert(readyForPermit(NewState))
+			   	  	 	 + adopt(buildGoal(Surface, 0)).
+			   	  	 	 
+			   	  	% If housing target is reached, build parks on the last available land. 	 
+			   		if bel( Rejected == 0, 
+			   				indicator(_, 'housing', _, Progress, _,_), 
+			   				Progress==100) 
+			   	  	  then delete(readyForPermit(State))
+			   			 + insert(readyForPermit(NewState))
+			  	 		 + adopt(buildGoal(Surface, 1)).
+			   		
+			   		% If a build permit is rejected, build parks.
+				   	if bel(	Rejected > 0, 
+				   			houseParkRatio(Surface, Houses, Parks)) 
+				   	  then delete( readyForPermit(State), 
+				   	  			   rejectedConcurrentPermits(Rejected)) 
+				   	  	 + insert( readyForPermit(NewState),
+				   	  	 		   rejectedConcurrentPermits(0)) 
+				   	  	 + adopt( buildGoal(Parks, 1)) 
+				   	  	 + adopt( rejectedPermitGoal(Rejected)).
 		   		}
 		   
-		% Adopt the goal for buying new land if there is land in your possession.
-		if bel( readyForPermit(State),
-				State = 'ready',
-				NewState = 'requestingLand', 
-				availableLand(Surface),
-				Surface < 50.0,
-				percentage(Percentage), 
-				standardPrice(Cost), 
-				calculateNeededLand(Percentage, Land))			
-			then delete(readyForPermit(State))
-			   + insert(readyForPermit(NewState))
-			   + adopt( buyLandGoal(Land, Cost)).	
+				% Adopt the goal for buying new land if there is land in your possession.
+				if bel( readyForPermit(State),
+						State = 'ready',
+						NewState = 'requestingLand', 
+						availableLand(Surface),
+						Surface < 50.0,
+						percentage(Percentage), 
+						standardPrice(Cost), 
+						calculateNeededLand(Percentage, Land))			
+					then delete(readyForPermit(State))
+					   + insert(readyForPermit(NewState))
+					   + adopt( buyLandGoal(Land, Cost)).	
 			
-	}
+			}
 			
+			% If the stakeholder ID is 2, the copmany, go to the company main module.
 			if bel( selfStakeholderID(2)) then {
-			% Build houses and parks depending on the amount of owned land and amount of concurrent rejected permits.
-		if bel(	readyForPermit(State),
-				State = 'ready',
-				NewState = 'requestingBuilding',
-				availableLand(Surface),
-				Surface >= 50.0,
-				rejectedConcurrentPermits(Rejected))
-	  		then {
-			   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress <100) 
-			   	  then delete(readyForPermit(State))
-			   		 + insert(readyForPermit(NewState))
-			   	  	 + adopt(buildGoal(Surface, 3)).
-			   	if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress==100) 
-			   	  then delete(readyForPermit(State))
-			   		 + insert(readyForPermit(NewState))
-			   		 + adopt(buildGoal(Surface, 2)).
-			   	if bel(	Rejected > 0, houseParkRatio(Surface, Offices, Parking)) 
-			   	  then delete(readyForPermit(State), 
-			   	  			  rejectedConcurrentPermits(Rejected)) 
-			   	  	 + insert(readyForPermit(NewState),
-			   	  	 		  rejectedConcurrentPermits(0)) 
-			   	  	 + adopt(buildGoal(Parking, 2)) 
-			   	  	 + adopt(rejectedPermitGoal(Rejected)).
+			
+				% Build offices or parking lots if land is owned.
+				% The amount of parking and offices depend on the amount of rejected permits.
+				if bel(	readyForPermit(State),
+						State = 'ready',
+						NewState = 'requestingBuilding',
+						availableLand(Surface),
+						Surface >= 50.0,
+						rejectedConcurrentPermits(Rejected))
+		    	  then {
+		    	  	
+		    	  	% If no permit is rejected yet and target not reached, build land full with buildings.
+			   		if bel( Rejected == 0, 
+			   				indicator(_, 'housing', _, Progress, _,_), 
+			   				Progress <100) 
+			   	  	  then delete(readyForPermit(State))
+			   		 	 + insert(readyForPermit(NewState))
+			   	  	 	 + adopt(buildGoal(Surface, 3)).
+			   	  	 	 
+			   	  	% If housing target is reached, build parking on the last available land. 	   	 	 
+			   		if bel( Rejected == 0, indicator(_, 'housing', _, Progress, _,_), Progress==100) 
+			   		  then delete(readyForPermit(State))
+			   			 + insert(readyForPermit(NewState))
+			   			 + adopt(buildGoal(Surface, 2)).
+			   	
+			   		% If a build permit is rejected, build parking.   	
+			   		if bel(	Rejected > 0, houseParkRatio(Surface, Offices, Parking)) 
+			   		  then delete( readyForPermit(State), 
+			   		  			   rejectedConcurrentPermits(Rejected)) 
+			   	  		 + insert( readyForPermit(NewState),
+			   	  		 		   rejectedConcurrentPermits(0)) 
+			   	  		 + adopt( buildGoal(Parking, 2)) 
+			   	  	 	 + adopt( rejectedPermitGoal(Rejected)).
 		   		}
 		   
-		% Adopt the goal for buying new land if there is land in your possession.
-		if bel( readyForPermit(State),
-				State = 'ready',
-				NewState = 'requestingLand', 
-				availableLand(Surface),
-				Surface < 50.0,
-				percentage(Percentage), 
-				standardPrice(Cost), 
-				calculateNeededLand(Percentage, Land))			
-			then delete(readyForPermit(State))
-			   + insert(readyForPermit(NewState))
-			   + adopt( buyLandGoal(Land, Cost)).
+			% Adopt the goal for buying new land if there is land in your possession.
+			if bel( readyForPermit(State),
+					State = 'ready',
+					NewState = 'requestingLand', 
+					availableLand(Surface),
+					Surface < 50.0,
+					percentage(Percentage), 
+					standardPrice(Cost), 
+					calculateNeededLand(Percentage, Land))			
+			  then delete( readyForPermit(State))
+				 + insert( readyForPermit(NewState))
+				 + adopt( buyLandGoal(Land, Cost)).
+		
 			}
 		}
 	}
@@ -256,14 +288,20 @@ main module {
 event module {
 	program {		
 		 	 	
-		if bel( percept(emo(joy, Number)), emo(joy, OldNumber))
-		then delete(emo(joy, OldNumber)) + insert(emo(joy, Number)).	 	
+		% Update the joy emotion value.
+		if bel( percept(emo(joy, Number)), 
+				emo(joy, OldNumber))
+		  then delete(emo(joy, OldNumber)) 
+		     + insert(emo(joy, Number)).	 	
 		 	 		   		   
+		% Update the amount of available land. 	 		   		   
 		if bel( percept(availableLand(Surface)),
 				availableLand(OldSurface))
 		  then delete( availableLand(OldSurface))
 		     + insert( availableLand(Surface)).
 		
+		% If the buy land action has been called, and the number 
+		% of permits changed, change the state to ready.
 		if bel( percept(permits(Amount)),
 				Amount = 0, 
 				permits(OldAmount),
@@ -276,6 +314,8 @@ event module {
 		     + insert( permits(Amount),
 		     		   readyForPermit(NewState)).  
 		    
+		% If the build action has been called, and the number
+		% of permits changed, change the state to permitBuilding.    
 		if bel( percept(permits(Amount)),
 				Amount = 0, 
 				permits(OldAmount),
@@ -288,20 +328,21 @@ event module {
 		     + insert( permits(Amount),
 		     		   readyForPermit(NewState)).
 		    
-		% Update budget on change (rejected).
-		if 	bel( percept( indicator(IndicatorID, Type, _, _, NewBudget, _)),
-				 Type == 'finance',
-				 initIndicator(_, IndicatorID, _), 
-				 budget(OldBudget),
-				 oldbudget(OlderBudget), 
-				 OldBudget>NewBudget,
-				 timer(X)) 
+		% Update budget on a rejected permit.
+		% Updates the timer to 31, making the agent able to handle the permit.
+		if bel( percept( indicator(IndicatorID, Type, _, _, NewBudget, _)),
+				Type == 'finance',
+				initIndicator(_, IndicatorID, _), 
+				budget(OldBudget),
+				oldbudget(OlderBudget), 
+				OldBudget>NewBudget,
+				timer(X)) 
 		  then delete( budget(OldBudget),
 		  			   timer(X)) 
 		 	 + insert( budget(NewBudget),
 		 	 		   timer(31)).   
 		 	 
-		% Update budget on change (accepted).
+		% Update budget on an accepted permit.
 		if 	bel( percept( indicator(IndicatorID, Type, _, _, NewBudget, _)),
 				 Type == 'finance',
 				 initIndicator(_, IndicatorID, _), 
@@ -312,7 +353,11 @@ event module {
 		  			   oldbudget(OlderBudget)) 
 		 	 + insert( budget(NewBudget),
 		 	 		   oldbudget(OldBudget)).  
-		     		    	
+		 
+		% Handles permit handling. If enough time has past,
+		% we will asume that the permit is handled.
+		% We do need the timer, since percepts we need 
+		% do not arrive on the same time.
 		if bel( budget(Budget),
 				oldbudget(OldBudget),
 				timer(X),
@@ -321,28 +366,32 @@ event module {
 				State = 'permitBuilding',
 				NewState = 'ready',
 				rejectedConcurrentPermits(Current))
-		  then { if bel( Budget \= OldBudget)
-		  			then delete( oldbudget(OldBudget),
-		  						 readyForPermit(State),
-		  						 rejectedConcurrentPermits(Current),
-		  						 timer(X))
-		     		   + insert( oldbudget(Budget),
-		     		   			 readyForPermit(NewState),
-		     		   			 rejectedConcurrentPermits(0),
-		     		   			 timer(0)).
+		  then { 
+		  	% If the budget changed, the permit is accepted.
+		  	if bel( Budget \= OldBudget)
+		  	   then delete( oldbudget(OldBudget),
+		  					readyForPermit(State),
+		  					rejectedConcurrentPermits(Current),
+		  					timer(X))
+		    	  + insert( oldbudget(Budget),
+		    	   			readyForPermit(NewState),
+		    	   			rejectedConcurrentPermits(0),
+		    	   			timer(0)).
 		     		   
-		     	 if bel( Budget == OldBudget,
-		     	 		 rejectedPermits(Permits))
-		  			then delete( odlbudget(OldBudget),
-		  						 readyForPermit(State),
-		  						 rejectedConcurrentPermits(Current),
-		  						 timer(X))
-		     		   + insert( oldbudget(Budget),
-		     		   			 readyForPermit(NewState),
-		     		   			 rejectedConcurrentPermits(Permits),
-		     		   			 timer(0)).
+		     % If the budget is still the same, the permit is rejected.		   
+		     if bel( Budget == OldBudget,
+		     		 rejectedPermits(Permits))
+		  	   then delete( oldbudget(OldBudget),
+		  					readyForPermit(State),
+		  					rejectedConcurrentPermits(Current),
+		  					timer(X))
+		     	  + insert( oldbudget(Budget),
+		     		   		readyForPermit(NewState),
+		     		   		rejectedConcurrentPermits(Permits),
+		     		   		timer(0)).
 		  }				
 		
+		% Updates the amount of open permit requests.
 		if bel( percept(permits(Amount)), 
 				permits(OldAmount),
 				OldAmount \= Amount)
@@ -353,8 +402,8 @@ event module {
 		forall bel( percept( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)),
 					indicator(ID, Type, Name, OldProgress, OldCurrent, Target), 
 					NewCurrent \= OldCurrent)
-			do delete(  indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
-			+  insert(  indicator(ID, Type, Name, NewProgress, NewCurrent, Target)).
+			do delete( indicator(ID, Type, Name, OldProgress, OldCurrent, Target)) 
+			+  insert( indicator(ID, Type, Name, NewProgress, NewCurrent, Target)).
 		
 		% If the progress is 100, the target is reached and the agent stops.
 		if bel( indicator(ID, Type, Name, Progress, Current, Target), 
