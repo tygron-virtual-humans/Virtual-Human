@@ -120,7 +120,8 @@ main module {
 		if bel( timer(X),
 				inctimer(X, Y),
 				readyForPermit(State),
-				State = 'permitBuilding')
+				(State = 'permitBuilding'; State = 'ready'),
+				X<21)
 		  then delete( timer(X))
 		     + insert(timer(Y)).
 		     
@@ -197,17 +198,20 @@ event module {
 		     + insert( permits(Amount),
 		     		   readyForPermit(NewState)).
 		    
-		% Update budget on change.
+		% Update budget on change (rejected).
 		if 	bel( percept( indicator(IndicatorID, Type, _, _, NewBudget, _)),
 				 Type == 'finance',
 				 initIndicator(_, IndicatorID, _), 
 				 budget(OldBudget),
 				 oldbudget(OlderBudget), 
-				 OldBudget>NewBudget) 
-		  then delete( budget(OldBudget)) 
-		 	 + insert( budget(NewBudget)).   
+				 OldBudget>NewBudget,
+				 timer(X)) 
+		  then delete( budget(OldBudget),
+		  			   timer(X)) 
+		 	 + insert( budget(NewBudget),
+		 	 		   timer(31)).   
 		 	 
-		% Update budget on change.
+		% Update budget on change (accepted).
 		if 	bel( percept( indicator(IndicatorID, Type, _, _, NewBudget, _)),
 				 Type == 'finance',
 				 initIndicator(_, IndicatorID, _), 
@@ -222,7 +226,7 @@ event module {
 		if bel( budget(Budget),
 				oldbudget(OldBudget),
 				timer(X),
-				X>20,
+				X>30,
 				readyForPermit(State),
 				State = 'permitBuilding',
 				NewState = 'ready',
