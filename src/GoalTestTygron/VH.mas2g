@@ -16,6 +16,10 @@ agentfiles{
 	"VH.goal".
 }
 
+emotionFile{
+	"emotionConfig.emo2g"
+}
+
 launchpolicy{
 	% Launch the environment and the agent.
 	when entity@env do launch VH.

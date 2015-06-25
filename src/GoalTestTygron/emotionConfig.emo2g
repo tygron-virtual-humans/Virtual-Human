@@ -1,0 +1,4 @@
+WHITELIST, ON
+IGOAL, buyLandGoal/2, 1
+IGOAL, buildGoal/2, 1
+IGOAL, rejectedPermitGoal/1, -0.5
