@@ -129,8 +129,7 @@ main module {
 		if bel( timer(X),
 				inctimer(X, Y),
 				readyForPermit(State),
-				(State = 'permitBuilding'; State = 'ready'),
-				X < 31)
+				State = 'permitBuilding')
 		  then delete( timer(X))
 		     + insert( timer(Y)).
 		    
