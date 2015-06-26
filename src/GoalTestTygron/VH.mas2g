@@ -1,6 +1,6 @@
 environment{
 	% Environment we work with that connects to the Tygron Engine.
-	env = "tygron-connect-environment-1.0-20150623.171854-1-jar-with-dependencies.jar".
+	env = "tygron-connect-environment-1.0-20150626.083929-1-jar-with-dependencies.jar".
 	init = [
 		% These parameters are not mandatory, defaults are: stakeholder = 1, map = testmap and slot is random
 	
@@ -16,9 +16,9 @@ agentfiles{
 	"VH.goal".
 }
 
-emotionFile{
-	"emotionConfig.emo2g"
-}
+%emotionFile{
+%	"emotionConfig.emo2g"
+%}
 
 launchpolicy{
 	% Launch the environment and the agent.
