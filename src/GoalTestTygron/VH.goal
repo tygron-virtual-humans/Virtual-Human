@@ -3,16 +3,15 @@ init module {
 		
 		% Needed to check if our permit for the land is accepted.
 		buyLandGoal(Surface, Cost) :- readyForPermit(State),
-									  State = 'readyLand', 
-									  availableLand(CurrentSurface).
+									  State = 'ready'.
 
 		% Needed to check if our permit for the buildings is accepted.
 		buildGoal(Surface, Type) :- readyForPermit(State), 
-									State = 'readyBuilding',
-									availableLand(CurrentSurface).
+									State = 'ready'.
 		
 		% Amount of rejected permits in a row.
-		rejectedPermitGoal(Rejected) :- Rejected > 0.
+		rejectedPermitGoal(Rejected) :- rejectedConcurrentPermits(X),
+										X > 0.
 		
 		% Calculate how much land will be bought from the current budget.
 		calculateNeededLand(Perc, Surf) :- standardPrice(PricePerSquare), 
@@ -37,8 +36,8 @@ init module {
 		inctimer(X, Y) :- Y is X+1.		
 		
 		% Compute new standardPrice with emotion.
-		emotionPrice(Joy, StandardPrice) :- Joy >= 0,
-											 StandardPrice is 400 + 50 * (Joy / 5).										  
+		emotionPrice(Joy, StandardPrice) :- Joy >= 0, Joy>= 10,
+											 StandardPrice is 400 + (20 * Joy).										  
 	}
 	
 	beliefs {
@@ -56,9 +55,6 @@ init module {
 		
 		% Number of rejected permits in a row.
 		rejectedConcurrentPermits(0).	
-		
-		% The agent feels no joy yet.
-		joy(0).
 
 		% Amount of open permits.
 		permits(0).
@@ -67,7 +63,7 @@ init module {
 		timer(0).
 		
 		% The value of the emotion joy.
-		emo(joy, 0).
+		gam(joy, 0).
 	}
 	
 	program {
@@ -132,13 +128,12 @@ main module {
 				State = 'permitBuilding')
 		  then delete( timer(X))
 		     + insert( timer(Y)).
-		    
 		     
 		% Only calls this main if the targets have not been reached.
 		if bel( targetReached(false)) then {
 			
 			% If you have the goal to buy land, buy land and ask for a permit.
-			if goal( buyLandGoal(Surface, Cost)), 
+			if a-goal( buyLandGoal(Surface, Cost)), 
 				bel( readyForPermit(State),
 					 State = 'requestingLand',
 					 NewState = 'waitingLand')
@@ -147,7 +142,7 @@ main module {
 			  	 + insert( readyForPermit(NewState)). 
 			
 			% If you have the goal to build buildings, build them and ask for a permit.	
-			if goal( buildGoal(Surface, Type)),
+			if a-goal( buildGoal(Surface, Type)),
 				bel( readyForPermit(State),
 				  	 (Type = 1; Type = 2),
 					 State = 'requestingBuilding',
@@ -158,7 +153,7 @@ main module {
 			  	 + drop( buildGoal(Surface, Type)).
 			  		
 			% If you have the goal to buy buildings, buy buildings and ask for a permit.	
-			if goal( buildGoal(Surface, Type)),
+			if a-goal( buildGoal(Surface, Type)),
 				bel( readyForPermit( State),
 					 State = 'requestingBuilding',
 					 NewState = 'waitingBuilding') 
@@ -168,7 +163,7 @@ main module {
 			
 			% If you receive a joy percept, change standard price.
 			if bel( standardPrice(Price), 
-					percept( emo(joy, Number)), 
+					percept( gam(joy, Number)), 
 					emotionPrice(Number, NewPrice))
 			  then delete( standardPrice(Price)) 
 			     + insert( standardPrice(NewPrice)).
@@ -288,10 +283,10 @@ event module {
 	program {		
 		 	 	
 		% Update the joy emotion value.
-		if bel( percept(emo(joy, Number)), 
-				emo(joy, OldNumber))
-		  then delete(emo(joy, OldNumber)) 
-		     + insert(emo(joy, Number)).	 	
+		if bel( percept(gam(joy, Number)), 
+				gam(joy, OldNumber))
+		  then delete(gam(joy, OldNumber)) 
+		     + insert(gam(joy, Number)).	 	
 		 	 		   		   
 		% Update the amount of available land. 	 		   		   
 		if bel( percept(availableLand(Surface)),

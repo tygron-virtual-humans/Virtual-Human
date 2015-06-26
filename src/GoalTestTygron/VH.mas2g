@@ -7,7 +7,7 @@ environment{
 		% Stakeholder, 0 is muncipianity, 1 is the housing corporation, 2 is company
 		stakeholder = 1,
 		map = "delft",
-		slot = 2
+		slot = 7
 	].
 }
 
@@ -16,9 +16,9 @@ agentfiles{
 	"VH.goal".
 }
 
-%emotionFile{
-%	"emotionConfig.emo2g"
-%}
+emotionFile{
+	"emotionConfig.emo2g"
+}
 
 launchpolicy{
 	% Launch the environment and the agent.
